@@ -81,6 +81,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
     await tester.pumpAndSettle();
 
+    final exc = tester.takeException();
+    if (exc != null) {
+      print('CAUGHT UNHANDLED EXCEPTION: $exc');
+    }
+    final texts = find.byType(Text).evaluate().map((e) => (e.widget as Text).data).toList();
+    print('ALL TEXTS IN TREE: $texts');
+
     expect(find.text('Unable to load anime catalog'), findsOneWidget);
     expect(find.textContaining('Network timeout error'), findsOneWidget);
     expect(find.text('Retry'), findsOneWidget);
