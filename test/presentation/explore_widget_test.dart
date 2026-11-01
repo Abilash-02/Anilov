@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:anilov/core/theme/app_theme.dart';
-import 'package:anilov/features/anime/data/anime_repository.dart';
 import 'package:anilov/features/anime/domain/models/anime_media.dart';
 import 'package:anilov/features/anime/presentation/providers/anime_providers.dart';
 import 'package:anilov/features/explore/presentation/explore_screen.dart';
