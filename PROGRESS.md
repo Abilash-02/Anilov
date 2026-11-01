@@ -1,10 +1,10 @@
 # Anilov Project Progress
 
-## Current State: RUN 1 (Foundation)
+## Current State: RUN 1 (Foundation Completed)
 
 | Run | Title | Status | CI Status |
 |---|---|---|---|
-| **RUN 1** | Foundation | In Progress (Testing in CI) | Pending |
+| **RUN 1** | Foundation | Completed | Passed (Artifact: `anilov-debug-apk`) |
 | **RUN 2** | Data, Home, Explore, Details | Not yet implemented | - |
 | **RUN 3** | Persistence & Watchlist | Not yet implemented | - |
 | **RUN 4** | Schedule & Sources | Not yet implemented | - |
@@ -24,5 +24,6 @@
 - [x] Automated Pillow icon generator `tools/make_icon.py`
 - [x] Idempotent Android manifest patcher `tools/patch_android.py`
 - [x] GitHub Actions CI workflow `.github/workflows/build-apk.yml`
-- [x] Comprehensive test suite (`theme_test.dart`, `widget_test.dart`, `navigation_test.dart`)
+- [x] Comprehensive test suite (15/15 passing in CI: `theme_test.dart`, `widget_test.dart`, `navigation_test.dart`)
 - [x] `README.md` and `PROGRESS.md`
+- [x] Debug APK artifact verified in GitHub Actions (`anilov-debug-apk`, run `41294758619`)
