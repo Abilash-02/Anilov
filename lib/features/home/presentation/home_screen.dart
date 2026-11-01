@@ -40,57 +40,57 @@ class HomeScreen extends ConsumerWidget {
           const SizedBox(width: 8),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () => ref.refresh(homeDataProvider.future),
-        child: homeAsync.when(
-          loading: () => ListView(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-            children: const [
-              AnimeHorizontalSection(title: 'Featured', isLoading: true),
-              SizedBox(height: 20),
-              AnimeHorizontalSection(title: 'Airing Today', isLoading: true),
-              SizedBox(height: 20),
-              AnimeHorizontalSection(title: 'Trending Now', isLoading: true),
-            ],
-          ),
-          error: (err, stack) => Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.cloud_off_rounded,
-                    size: 56,
-                    color: AppTheme.violetLight,
+      body: homeAsync.when(
+        loading: () => ListView(
+          padding: const EdgeInsets.symmetric(vertical: 12.0),
+          children: const [
+            AnimeHorizontalSection(title: 'Featured', isLoading: true),
+            SizedBox(height: 20),
+            AnimeHorizontalSection(title: 'Airing Today', isLoading: true),
+            SizedBox(height: 20),
+            AnimeHorizontalSection(title: 'Trending Now', isLoading: true),
+          ],
+        ),
+        error: (err, stack) => Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.cloud_off_rounded,
+                  size: 56,
+                  color: AppTheme.violetLight,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Unable to load anime catalog',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Unable to load anime catalog',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  err.toString(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    err.toString(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  FilledButton.icon(
-                    onPressed: () => ref.refresh(homeDataProvider),
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 20),
+                FilledButton.icon(
+                  onPressed: () => ref.refresh(homeDataProvider),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                ),
+              ],
             ),
           ),
-          data: (data) => ListView(
+        ),
+        data: (data) => RefreshIndicator(
+          onRefresh: () => ref.refresh(homeDataProvider.future),
+          child: ListView(
             padding: const EdgeInsets.symmetric(vertical: 12.0),
             children: [
               // Search Bar Entry Point
