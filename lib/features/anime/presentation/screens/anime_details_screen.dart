@@ -33,7 +33,7 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
           child: CircularProgressIndicator(),
         ),
         error: (err, stack) => Center(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

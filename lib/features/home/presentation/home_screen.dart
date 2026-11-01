@@ -54,7 +54,7 @@ class HomeScreen extends ConsumerWidget {
             ],
           ),
           error: (err, stack) => Center(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -119,11 +119,14 @@ class HomeScreen extends ConsumerWidget {
                             color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
                           ),
                           const SizedBox(width: 12),
-                          Text(
-                            'Search anime titles, genres, studios...',
-                            style: TextStyle(
-                              color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
-                              fontSize: 14,
+                          Expanded(
+                            child: Text(
+                              'Search anime titles, genres, studios...',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                         ],

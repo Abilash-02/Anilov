@@ -53,6 +53,11 @@ void main() {
   });
 
   testWidgets('HomeScreen displays error state and retry button on failure', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     final fakeRepo = FakeAnimeRepository([sampleAnime], shouldFail: true);
 
     await tester.pumpWidget(
