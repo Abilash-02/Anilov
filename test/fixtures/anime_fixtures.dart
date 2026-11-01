@@ -2,6 +2,8 @@
 
 import 'package:anilov/features/anime/data/anime_repository.dart';
 import 'package:anilov/features/anime/domain/models/anime_media.dart';
+import 'package:anilov/features/anime/domain/models/episode_metadata.dart';
+import 'package:anilov/features/schedule/domain/models/airing_schedule.dart';
 import 'package:anilov/features/watchlist/data/history_repository.dart';
 import 'package:anilov/features/watchlist/data/watchlist_repository.dart';
 import 'package:anilov/features/watchlist/domain/models/history_item.dart';
@@ -119,11 +121,58 @@ const Map<String, dynamic> samplePageJson = {
   }
 };
 
+const Map<String, dynamic> sampleAiringScheduleJson = {
+  'id': 12345,
+  'airingAt': 1793540000,
+  'timeUntilAiring': 3600,
+  'episode': 5,
+  'mediaId': 16498,
+  'media': sampleAnimeJson,
+};
+
+const Map<String, dynamic> sampleAniZipJson = {
+  'titles': {
+    'en': 'Attack on Titan',
+    'ja': '進撃の巨人',
+  },
+  'episodes': {
+    '1': {
+      'episode': '1',
+      'title': {
+        'en': 'To You, in 2000 Years',
+        'x-jat': 'Nisen Nen-go no Kimi e',
+      },
+      'image': 'https://example.com/ep1.jpg',
+      'airDate': '2013-04-07',
+      'runtime': 24,
+      'overview': 'Humanity was forced to retreat behind enormous walls.'
+    },
+    '2': {
+      'episode': '2',
+      'title': {
+        'en': 'That Day',
+        'x-jat': 'Sono Hi',
+      },
+      'image': 'https://example.com/ep2.jpg',
+      'airDate': '2013-04-14',
+      'runtime': 24,
+      'overview': 'Eren seeks revenge after the Armored Titan breaks through.'
+    }
+  }
+};
+
 class FakeAnimeRepository implements AnimeRepository {
   final List<AnimeMedia> items;
+  final List<AiringSchedule> schedules;
+  final List<EpisodeMetadata> episodes;
   final bool shouldFail;
 
-  FakeAnimeRepository(this.items, {this.shouldFail = false});
+  FakeAnimeRepository(
+    this.items, {
+    this.schedules = const [],
+    this.episodes = const [],
+    this.shouldFail = false,
+  });
 
   @override
   Future<List<AnimeMedia>> getTrendingAnime({int page = 1, int perPage = 10}) async {
@@ -181,6 +230,30 @@ class FakeAnimeRepository implements AnimeRepository {
 
   @override
   Future<List<String>> getGenres() async => ['Action', 'Adventure', 'Comedy', 'Drama'];
+
+  @override
+  Future<List<AiringSchedule>> getAiringSchedules({
+    required int startTimestamp,
+    required int endTimestamp,
+    int page = 1,
+    int perPage = 50,
+  }) async {
+    if (shouldFail) throw Exception('Schedule network error');
+    return schedules;
+  }
+
+  @override
+  Future<List<EpisodeMetadata>> getEpisodesMetadata(
+    int anilistId, {
+    int? fallbackCount,
+  }) async {
+    if (shouldFail) throw Exception('ani.zip enrichment error');
+    if (episodes.isNotEmpty) return episodes;
+    if (fallbackCount != null && fallbackCount > 0) {
+      return List.generate(fallbackCount, (i) => EpisodeMetadata.fallback(i + 1));
+    }
+    return const [];
+  }
 }
 
 class FakeWatchlistRepository implements WatchlistRepository {

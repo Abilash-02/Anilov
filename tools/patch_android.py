@@ -43,7 +43,26 @@ def patch_manifest():
                 content = content[:idx] + f"\n    {perm}" + content[idx:]
                 print(f"Added permission: {perm_name}")
 
-    # 2. Set application label to 'Anilov'
+    # 2. Ensure queries block exists for url_launcher (Android 11+)
+    if '<queries>' not in content:
+        queries_block = """
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+    </queries>"""
+        manifest_tag = re.search(r'(<manifest[^>]*>)', content)
+        if manifest_tag:
+            idx = manifest_tag.end()
+            content = content[:idx] + queries_block + content[idx:]
+            print("Added <queries> block for url_launcher")
+
+    # 3. Set application label to 'Anilov'
     # Match android:label="..." inside <application ...>
     app_tag_match = re.search(r'<application\b([^>]*)>', content, re.DOTALL)
     if app_tag_match:

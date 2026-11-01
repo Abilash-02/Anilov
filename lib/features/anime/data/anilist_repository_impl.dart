@@ -1,12 +1,19 @@
+import '../../schedule/domain/models/airing_schedule.dart';
 import '../domain/models/anime_media.dart';
+import '../domain/models/episode_metadata.dart';
 import 'anilist_client.dart';
 import 'anime_repository.dart';
+import 'anizip_client.dart';
 
 class AniListRepositoryImpl implements AnimeRepository {
   final AniListClient _client;
+  final AniZipClient _aniZipClient;
 
-  AniListRepositoryImpl({AniListClient? client})
-      : _client = client ?? AniListClient();
+  AniListRepositoryImpl({
+    AniListClient? client,
+    AniZipClient? aniZipClient,
+  })  : _client = client ?? AniListClient(),
+        _aniZipClient = aniZipClient ?? AniZipClient();
 
   static const String _mediaFieldsFragment = '''
     id
@@ -266,5 +273,66 @@ class AniListRepositoryImpl implements AnimeRepository {
         .whereType<Map<String, dynamic>>()
         .map((m) => AnimeMedia.fromJson(m))
         .toList();
+  }
+
+  static const String _airingScheduleQuery = '''
+    query (\$airingAt_greater: Int, \$airingAt_lesser: Int, \$page: Int, \$perPage: Int) {
+      Page(page: \$page, perPage: \$perPage) {
+        pageInfo {
+          hasNextPage
+          total
+        }
+        airingSchedules(
+          airingAt_greater: \$airingAt_greater
+          airingAt_lesser: \$airingAt_lesser
+          sort: TIME
+        ) {
+          id
+          airingAt
+          timeUntilAiring
+          episode
+          mediaId
+          media {
+            $_mediaFieldsFragment
+          }
+        }
+      }
+    }
+  ''';
+
+  @override
+  Future<List<AiringSchedule>> getAiringSchedules({
+    required int startTimestamp,
+    required int endTimestamp,
+    int page = 1,
+    int perPage = 50,
+  }) async {
+    final data = await _client.postQuery(
+      _airingScheduleQuery,
+      variables: {
+        'airingAt_greater': startTimestamp,
+        'airingAt_lesser': endTimestamp,
+        'page': page,
+        'perPage': perPage,
+      },
+    );
+
+    final pageMap = data['Page'] as Map<String, dynamic>?;
+    if (pageMap == null) return [];
+    final schedules = pageMap['airingSchedules'] as List?;
+    if (schedules == null) return [];
+
+    return schedules
+        .whereType<Map<String, dynamic>>()
+        .map((s) => AiringSchedule.fromJson(s))
+        .toList();
+  }
+
+  @override
+  Future<List<EpisodeMetadata>> getEpisodesMetadata(
+    int anilistId, {
+    int? fallbackCount,
+  }) async {
+    return _aniZipClient.getEpisodes(anilistId, fallbackCount: fallbackCount);
   }
 }

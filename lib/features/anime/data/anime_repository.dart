@@ -1,4 +1,6 @@
+import '../../schedule/domain/models/airing_schedule.dart';
 import '../domain/models/anime_media.dart';
+import '../domain/models/episode_metadata.dart';
 
 abstract class AnimeRepository {
   Future<List<AnimeMedia>> getTrendingAnime({int page = 1, int perPage = 10});
@@ -25,4 +27,16 @@ abstract class AnimeRepository {
   });
 
   Future<List<String>> getGenres();
+
+  Future<List<AiringSchedule>> getAiringSchedules({
+    required int startTimestamp,
+    required int endTimestamp,
+    int page = 1,
+    int perPage = 50,
+  });
+
+  Future<List<EpisodeMetadata>> getEpisodesMetadata(
+    int anilistId, {
+    int? fallbackCount,
+  });
 }

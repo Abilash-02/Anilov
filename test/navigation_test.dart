@@ -80,12 +80,22 @@ void main() {
     });
 
     testWidgets('ScheduleScreen renders weekday tabs', (tester) async {
+      final fakeRepo = FakeAnimeRepository([sampleAnime]);
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.darkTheme,
-          home: const ScheduleScreen(),
+        ProviderScope(
+          overrides: [
+            animeRepositoryProvider.overrideWithValue(fakeRepo),
+            watchlistRepositoryProvider.overrideWithValue(FakeWatchlistRepository()),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.darkTheme,
+            home: const ScheduleScreen(),
+          ),
         ),
       );
+
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.text('Broadcast Schedule'), findsOneWidget);
       expect(find.text('Mon'), findsOneWidget);

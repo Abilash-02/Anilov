@@ -2,14 +2,17 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../schedule/presentation/providers/schedule_providers.dart';
 import '../../../watchlist/domain/models/watch_status.dart';
 import '../../../watchlist/domain/models/watchlist_item.dart';
 import '../../../watchlist/presentation/providers/watchlist_providers.dart';
 import '../../../watchlist/presentation/widgets/watchlist_edit_sheet.dart';
 import '../../domain/models/anime_media.dart';
 import '../providers/anime_providers.dart';
+import '../widgets/trailer_player_dialog.dart';
 
 class AnimeDetailsScreen extends ConsumerStatefulWidget {
   final int id;
@@ -378,54 +381,64 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
                         style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 8),
-                      Container(
-                        width: double.infinity,
-                        height: 170,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: AppTheme.darkSurface,
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            if (anime.trailer!.thumbnailUrl != null)
-                              CachedNetworkImage(
-                                imageUrl: anime.trailer!.thumbnailUrl!,
-                                fit: BoxFit.cover,
-                                errorWidget: (_, __, ___) => Container(color: Colors.black54),
-                              ),
-                            Container(
-                              color: Colors.black.withValues(alpha: 0.4),
-                            ),
-                            Center(
-                              child: Container(
-                                width: 56,
-                                height: 56,
-                                decoration: const BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
+                      InkWell(
+                        onTap: () {
+                          TrailerPlayerDialog.show(
+                            context,
+                            videoId: anime.trailer!.id,
+                            title: anime.title.displayTitle,
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: double.infinity,
+                          height: 170,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: AppTheme.darkSurface,
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              if (anime.trailer!.thumbnailUrl != null)
+                                CachedNetworkImage(
+                                  imageUrl: anime.trailer!.thumbnailUrl!,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (_, __, ___) => Container(color: Colors.black54),
                                 ),
-                                child: const Icon(
-                                  Icons.play_arrow_rounded,
-                                  color: Colors.white,
-                                  size: 36,
-                                ),
+                              Container(
+                                color: Colors.black.withValues(alpha: 0.4),
                               ),
-                            ),
-                            Positioned(
-                              bottom: 8,
-                              left: 12,
-                              child: Text(
-                                'YouTube Official Embed (Run 4)',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
+                              Center(
+                                child: Container(
+                                  width: 56,
+                                  height: 56,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.play_arrow_rounded,
+                                    color: Colors.white,
+                                    size: 36,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                              Positioned(
+                                bottom: 8,
+                                left: 12,
+                                child: Text(
+                                  'Watch Official Trailer (Tap to Play)',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -470,13 +483,17 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
                         runSpacing: 8,
                         children: anime.externalLinks.map((link) {
                           return OutlinedButton.icon(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Official provider: ${link.site} (${link.url})'),
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
+                            onPressed: () async {
+                              final uri = Uri.tryParse(link.url);
+                              if (uri != null && await canLaunchUrl(uri)) {
+                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                              } else {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Could not open ${link.site} link.')),
+                                  );
+                                }
+                              }
                             },
                             icon: const Icon(Icons.open_in_new, size: 16),
                             label: Text(link.site),
@@ -486,7 +503,41 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
                           );
                         }).toList(),
                       ),
+                    const SizedBox(height: 12),
+
+                    // Legal link evaluation verification entry
+                    InkWell(
+                      onTap: () => ExternalLinkNoticeDialog.show(
+                        context,
+                        'https://share.google/0XKcrS1PHQZW2NgkN',
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.shield_outlined, size: 14, color: AppTheme.violetLight),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Verify External Link Policy (share.google evaluation)',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? AppTheme.violetLight : AppTheme.violetDark,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 24),
+
+                    // Enriched Episodes Section (ani.zip enrichment + AniList)
+                    _EpisodesSection(
+                      anime: anime,
+                      watchlistItem: watchlistItemAsync.asData?.value,
+                    ),
 
                     // Related Anime
                     if (anime.relations.isNotEmpty) ...[
@@ -817,6 +868,165 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _EpisodesSection extends ConsumerWidget {
+  final AnimeMedia anime;
+  final WatchlistItem? watchlistItem;
+
+  const _EpisodesSection({
+    required this.anime,
+    required this.watchlistItem,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final episodesAsync = ref.watch(
+      episodeListProvider((animeId: anime.id, totalEpisodes: anime.episodes)),
+    );
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final currentProgress = watchlistItem?.progress ?? 0;
+
+    return episodesAsync.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.0),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (episodes) {
+        if (episodes.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Episodes (${episodes.length})',
+                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  'ani.zip enriched',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: episodes.length > 30 ? 30 : episodes.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              itemBuilder: (context, index) {
+                final ep = episodes[index];
+                final isWatched = ep.episodeNumber <= currentProgress;
+
+                return Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppTheme.darkSurface : AppTheme.lightSurfaceVariant,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isWatched
+                          ? Colors.green.withValues(alpha: 0.4)
+                          : (isDark ? const Color(0xFF2E2E38) : const Color(0xFFE5E7EB)),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      // Thumbnail or ep box
+                      Container(
+                        width: 60,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: isDark ? AppTheme.darkSurfaceVariant : AppTheme.lightSurface,
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: ep.image != null
+                            ? CachedNetworkImage(
+                                imageUrl: ep.image!,
+                                fit: BoxFit.cover,
+                                errorWidget: (_, __, ___) => Center(
+                                  child: Text('${ep.episodeNumber}',
+                                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                                ),
+                              )
+                            : Center(
+                                child: Text('${ep.episodeNumber}',
+                                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                              ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      // Episode Title & Info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              ep.displayTitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                                color: isWatched ? Colors.green : null,
+                              ),
+                            ),
+                            if (ep.runtime != null || ep.airDate != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                [
+                                  if (ep.runtime != null) '${ep.runtime}m',
+                                  if (ep.airDate != null) ep.airDate!,
+                                ].join(' • '),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: isDark
+                                      ? AppTheme.darkOnSurfaceMuted
+                                      : AppTheme.lightOnSurfaceMuted,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+
+                      // Mark Watched Toggle Button
+                      IconButton(
+                        icon: Icon(
+                          isWatched ? Icons.check_circle : Icons.check_circle_outline,
+                          color: isWatched ? Colors.green : Colors.grey,
+                          size: 22,
+                        ),
+                        tooltip: isWatched ? 'Watched' : 'Mark as watched',
+                        onPressed: () {
+                          final newProgress = isWatched ? ep.episodeNumber - 1 : ep.episodeNumber;
+                          ref.read(watchlistNotifierProvider.notifier).updateProgress(
+                                anime.id,
+                                newProgress,
+                                title: anime.title.displayTitle,
+                                coverUrl: anime.coverImage.displayUrl,
+                              );
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+          ],
+        );
+      },
     );
   }
 }
