@@ -59,13 +59,6 @@ class AnimeCard extends StatelessWidget {
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Container(
                             color: isDark ? const Color(0xFF262630) : const Color(0xFFE2E8F0),
-                            child: const Center(
-                              child: SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            ),
                           ),
                           errorWidget: (context, url, error) => Container(
                             color: isDark ? const Color(0xFF262630) : const Color(0xFFE2E8F0),

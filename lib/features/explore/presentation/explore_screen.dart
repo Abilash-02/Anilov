@@ -63,6 +63,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(exploreStateProvider.notifier).search();
+      }
+    });
   }
 
   void _onScroll() {

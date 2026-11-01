@@ -33,7 +33,7 @@ void main() {
 
     // Initial pump
     await tester.pump();
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
 
     // Verify search bar entry point
     expect(find.text('Search anime titles, genres, studios...'), findsOneWidget);
@@ -68,7 +68,7 @@ void main() {
     );
 
     await tester.pump();
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('Unable to load anime catalog'), findsOneWidget);
     expect(find.text('Network timeout error'), findsOneWidget);

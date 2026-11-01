@@ -69,7 +69,7 @@ void main() {
     );
 
     await tester.pump();
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('Explore'), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
@@ -93,10 +93,10 @@ void main() {
     );
 
     await tester.pump();
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
 
     await tester.tap(find.byIcon(Icons.sort_rounded));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('Sort Anime By'), findsOneWidget);
     expect(find.text('Trending'), findsOneWidget);

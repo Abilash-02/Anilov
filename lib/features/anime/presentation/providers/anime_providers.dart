@@ -146,7 +146,6 @@ class ExploreNotifier extends Notifier<ExploreState> {
       _debounceTimer?.cancel();
     });
     _loadSearchHistory();
-    Future.microtask(() => search());
     return const ExploreState();
   }
 

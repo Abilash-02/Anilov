@@ -24,7 +24,7 @@ void main() {
     );
 
     await tester.pump();
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
 
     // Verify title and metadata
     expect(find.text('Attack on Titan'), findsOneWidget);
@@ -43,7 +43,7 @@ void main() {
 
     // Tap Read more to expand
     await tester.tap(find.text('Read more'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('Show less'), findsOneWidget);
 
     // Official Trailer
@@ -79,7 +79,7 @@ void main() {
     );
 
     await tester.pump();
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('Failed to load anime details'), findsOneWidget);
     expect(find.text('Retry'), findsOneWidget);

@@ -42,7 +42,7 @@ void main() {
       );
 
       await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text('Trending Now'), findsOneWidget);
       expect(find.text('Airing Today'), findsOneWidget);
@@ -60,6 +60,7 @@ void main() {
       );
 
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text('Explore'), findsOneWidget);
       expect(find.text('All Genres'), findsOneWidget);
