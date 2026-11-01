@@ -11,6 +11,11 @@ void main() {
   final sampleAnime = AnimeMedia.fromJson(sampleAnimeJson);
 
   testWidgets('AnimeDetailsScreen renders metadata, synopsis, trailer, and official sources', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -69,7 +74,8 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          animeDetailsProvider(16498).overrideWith((ref) => Future.error('Error fetching details')),
+          animeDetailsProvider(16498)
+              .overrideWith((ref) => throw Exception('Failed to load anime details')),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,

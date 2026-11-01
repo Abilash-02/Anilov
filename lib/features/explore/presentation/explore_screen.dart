@@ -331,7 +331,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
     if (state.items.isEmpty) {
       return Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

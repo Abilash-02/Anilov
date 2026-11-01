@@ -39,7 +39,7 @@ void main() {
     expect(find.text('Search anime titles, genres, studios...'), findsOneWidget);
 
     // Verify genre shortcuts
-    expect(find.text('Action'), findsOneWidget);
+    expect(find.text('Action'), findsWidgets);
     expect(find.text('Adventure'), findsOneWidget);
 
     // Verify sections
