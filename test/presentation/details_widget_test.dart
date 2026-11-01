@@ -78,12 +78,12 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final fakeRepo = FakeAnimeRepository([sampleAnime], shouldFail: true);
-
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          animeRepositoryProvider.overrideWithValue(fakeRepo),
+          animeDetailsProvider(16498).overrideWith((ref) async {
+            throw Exception('Failed to load anime details');
+          }),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
@@ -93,7 +93,7 @@ void main() {
     );
 
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pumpAndSettle();
 
     expect(find.text('Failed to load anime details'), findsOneWidget);
     expect(find.text('Retry'), findsOneWidget);

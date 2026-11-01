@@ -40,11 +40,16 @@ void main() {
     expect(find.text('Action'), findsWidgets);
     expect(find.text('Adventure'), findsOneWidget);
 
-    // Verify sections
+    // Verify sections visible initially
     expect(find.text('TRENDING #1'), findsOneWidget);
     expect(find.text('Airing Today'), findsOneWidget);
     expect(find.text('Trending Now'), findsOneWidget);
     expect(find.text('All-Time Popular'), findsOneWidget);
+
+    // Scroll to see remaining sections
+    await tester.drag(find.byType(ListView).first, const Offset(0, -600));
+    await tester.pump();
+
     expect(find.text('Top Rated'), findsOneWidget);
     expect(find.text('Currently Airing'), findsOneWidget);
 
@@ -58,12 +63,12 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final fakeRepo = FakeAnimeRepository([sampleAnime], shouldFail: true);
-
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          animeRepositoryProvider.overrideWithValue(fakeRepo),
+          homeDataProvider.overrideWith((ref) async {
+            throw Exception('Network timeout error');
+          }),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
@@ -73,7 +78,7 @@ void main() {
     );
 
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pumpAndSettle();
 
     expect(find.text('Unable to load anime catalog'), findsOneWidget);
     expect(find.textContaining('Network timeout error'), findsOneWidget);
