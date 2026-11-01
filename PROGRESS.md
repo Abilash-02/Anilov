@@ -1,13 +1,13 @@
 # Anilov Project Progress
 
-## Current State: RUN 3 (Persistence & Watchlist) — Completed
+## Current State: RUN 4 (Schedule & Sources) — Completed
 
 | Run | Title | Status | CI Status |
 |---|---|---|---|
 | **RUN 1** | Foundation | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41294758619`) |
 | **RUN 2** | Data, Home, Explore, Details | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41305607753`) |
 | **RUN 3** | Persistence & Watchlist | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41321261934`) |
-| **RUN 4** | Schedule & Sources | Not yet implemented | - |
+| **RUN 4** | Schedule & Sources | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41332993906`) |
 | **RUN 5** | Daily Updates & Polish | Not yet implemented | - |
 | **RUN 6** | Optional: AniList OAuth Sync | Not yet implemented | - |
 
@@ -112,3 +112,42 @@
 - [x] **CI Verification & Artifacts**:
   - Run ID: `41321261934` (Passed in 5m36s).
   - Debug APK built and verified: `anilov-debug-apk` (uploaded to GitHub Actions).
+
+---
+
+## RUN 4 Deliverables (Completed)
+- [x] **Dependencies Added**:
+  - `url_launcher` (`>=6.3.0 <7.0.0`): Safe external browser/intent launching with `<queries>` for `https` and `http` added to `AndroidManifest.xml` via `tools/patch_android.py`.
+  - `youtube_player_iframe` (`>=5.1.2 <7.0.0`): Official YouTube trailer player embedding using official YouTube iframe API without scraping or video stream extraction.
+- [x] **AniList Airing Schedule Integration** (`lib/features/schedule/domain/models/airing_schedule.dart`, `lib/features/anime/data/anilist_repository_impl.dart`):
+  - GraphQL `AiringSchedules` query fetching weekly schedules (`airingAt_greater`, `airingAt_lesser`).
+  - Parsing UTC timestamps into local timezone (`airingAtLocal`), with countdown formatting ("airs in 2h 15m", "aired 3h ago"), weekday indexing (Mon=1 ... Sun=7), and episode numbers.
+- [x] **Weekly Airing Schedule View** (`lib/features/schedule/presentation/schedule_screen.dart`):
+  - Tabbed interface covering Monday to Sunday, automatically selecting the user's current day of the week.
+  - Prominent disclaimer notice explaining local timezone conversion.
+  - Watchlist-only filter chip (`scheduleWatchlistOnlyProvider`) powered by Riverpod 3 `Notifier<bool>`.
+  - Pull-to-refresh (`weeklyScheduleProvider`) with clean loading, empty, and error retry states.
+  - `ScheduleCard` with poster, title, episode number badge, localized airing time, countdown indicator, and navigation to anime details.
+- [x] **Anime Trailers with Official YouTube Embed** (`lib/features/anime/presentation/widgets/trailer_player_dialog.dart`):
+  - Embedded YouTube player with custom playback controls, auto-pause on modal dismissal, full video metadata display, and "Open in YouTube" fallback action.
+- [x] **Where-to-Watch Service Links** (`lib/features/anime/presentation/screens/anime_details_screen.dart`):
+  - Renders external links from AniList data (Crunchyroll, Netflix, Hulu, Funimation, Hidive, etc.) with custom branding colors.
+  - Opens external authorized platforms via `url_launcher` with browser fallback.
+- [x] **Optional ani.zip Episode Metadata Enrichment** (`lib/features/anime/data/anizip_client.dart`, `lib/features/anime/domain/models/episode_metadata.dart`):
+  - Dio client querying `https://api.ani.zip/mappings?anilist_id=<id>` with 10s timeouts and in-memory caching.
+  - Graceful fallback: when unavailable or on failure, falls back to plain numbered episodes without crashing.
+  - Episode list in details screen shows localized episode titles, summaries, runtimes, air dates, and watched progress checkmarks.
+  - No streaming video links or scrapers; mocked unit tests for offline verification; source attribution on About screen and details page.
+- [x] **Google Share Link Safe Evaluation** (`https://share.google/0XKcrS1PHQZW2NgkN`):
+  - Evaluated safely in `lib/features/anime/domain/models/playback_source.dart` without scraping, web crawling, DRM bypass, or assuming it is a direct video stream.
+  - `ExternalLinkNoticeDialog` explains to users the limitation: Google share links are cloud file/redirect shares, requiring user authentication and an external browser, never scraped or embedded as unauthorized playback streams.
+- [x] **Comprehensive Test Suite** (74/74 tests passing in CI):
+  - `test/models/schedule_model_test.dart`: AiringSchedule JSON parsing, UTC to local timezone conversion, countdown formatting, and null-safe defaults (4 tests).
+  - `test/models/anizip_model_test.dart`: EpisodeMetadata JSON parsing, localized title resolution, plain title strings, fallback titles, and plain number generation (4 tests).
+  - `test/repository/anizip_repository_test.dart`: ani.zip mocked JSON parsing, client caching, and network failure fallback (3 tests).
+  - `test/presentation/schedule_widget_test.dart`: ScheduleScreen weekday tabs, disclaimer notice, watchlist filter, empty state, and ScheduleCard layout (2 tests).
+  - `test/presentation/sources_widget_test.dart`: Google share link evaluation, YouTube URL evaluation, generic link evaluation, and ExternalLinkNoticeDialog rendering (4 tests).
+  - All existing suites passing: `theme_test.dart` (4), `widget_test.dart` (6), `navigation_test.dart` (5), `anime_model_test.dart` (5), `anilist_repository_test.dart` (6), `watchlist_model_test.dart` (7), `database_persistence_test.dart` (11), `watchlist_widget_test.dart` (3), `history_widget_test.dart` (2), `home_widget_test.dart` (2), `explore_widget_test.dart` (2), `details_widget_test.dart` (2).
+- [x] **CI Verification & Artifacts**:
+  - Run ID: `41332993906`.
+  - Debug APK built and verified: `anilov-debug-apk`.
