@@ -51,10 +51,10 @@ void main() {
 
     testWidgets('ExploreScreen renders search and filter chips', (tester) async {
       await tester.pumpWidget(
-        const ProviderScope(
+        ProviderScope(
           child: MaterialApp(
             theme: AppTheme.darkTheme,
-            home: ExploreScreen(),
+            home: const ExploreScreen(),
           ),
         ),
       );

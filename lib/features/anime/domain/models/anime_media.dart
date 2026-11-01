@@ -1,5 +1,5 @@
-/// Domain models for Anime metadata queried from AniList GraphQL.
-/// All JSON factories are null-safe with conservative fallbacks.
+// Domain models for Anime metadata queried from AniList GraphQL.
+// All JSON factories are null-safe with conservative fallbacks.
 
 class AnimeTitle {
   final String? romaji;
@@ -26,10 +26,18 @@ class AnimeTitle {
 
   /// Preferred user-friendly title
   String get displayTitle {
-    if (english != null && english!.trim().isNotEmpty) return english!;
-    if (userPreferred != null && userPreferred!.trim().isNotEmpty) return userPreferred!;
-    if (romaji != null && romaji!.trim().isNotEmpty) return romaji!;
-    if (native != null && native!.trim().isNotEmpty) return native!;
+    if (english != null && english!.trim().isNotEmpty) {
+      return english!;
+    }
+    if (userPreferred != null && userPreferred!.trim().isNotEmpty) {
+      return userPreferred!;
+    }
+    if (romaji != null && romaji!.trim().isNotEmpty) {
+      return romaji!;
+    }
+    if (native != null && native!.trim().isNotEmpty) {
+      return native!;
+    }
     return 'Untitled';
   }
 }
@@ -69,7 +77,7 @@ class AnimeTrailer {
     this.site,
   });
 
-  factory AnimeTrailer.fromJson(Map<String, dynamic>? json) {
+  static AnimeTrailer? fromJson(Map<String, dynamic>? json) {
     if (json == null) return null;
     final id = json['id'] as String?;
     final site = json['site'] as String?;
@@ -121,7 +129,7 @@ class AnimeNextAiring {
     this.episode,
   });
 
-  factory AnimeNextAiring.fromJson(Map<String, dynamic>? json) {
+  static AnimeNextAiring? fromJson(Map<String, dynamic>? json) {
     if (json == null) return null;
     return AnimeNextAiring(
       airingAt: json['airingAt'] as int?,

@@ -1,4 +1,4 @@
-/// Test JSON fixtures simulating AniList GraphQL responses.
+// Test JSON fixtures simulating AniList GraphQL responses.
 
 const Map<String, dynamic> sampleAnimeJson = {
   'id': 16498,

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../domain/models/anime_media.dart';
 import '../providers/anime_providers.dart';
 
 class AnimeDetailsScreen extends ConsumerStatefulWidget {

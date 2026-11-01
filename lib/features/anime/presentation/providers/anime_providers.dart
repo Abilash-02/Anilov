@@ -135,13 +135,19 @@ class ExploreState {
   }
 }
 
-class ExploreNotifier extends StateNotifier<ExploreState> {
-  final AnimeRepository _repository;
+class ExploreNotifier extends Notifier<ExploreState> {
   Timer? _debounceTimer;
 
-  ExploreNotifier(this._repository) : super(const ExploreState()) {
+  AnimeRepository get _repository => ref.read(animeRepositoryProvider);
+
+  @override
+  ExploreState build() {
+    ref.onDispose(() {
+      _debounceTimer?.cancel();
+    });
     _loadSearchHistory();
-    search();
+    Future.microtask(() => search());
+    return const ExploreState();
   }
 
   Future<void> _loadSearchHistory() async {
@@ -278,16 +284,7 @@ class ExploreNotifier extends StateNotifier<ExploreState> {
       state = state.copyWith(isLoadingMore: false);
     }
   }
-
-  @override
-  void dispose() {
-    _debounceTimer?.cancel();
-    super.dispose();
-  }
 }
 
 final exploreStateProvider =
-    StateNotifierProvider.autoDispose<ExploreNotifier, ExploreState>((ref) {
-  final repo = ref.watch(animeRepositoryProvider);
-  return ExploreNotifier(repo);
-});
+    NotifierProvider<ExploreNotifier, ExploreState>(ExploreNotifier.new);

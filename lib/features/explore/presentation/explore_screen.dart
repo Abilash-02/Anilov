@@ -198,13 +198,59 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ),
             ),
 
-          // Filters Bar: Genre & Format Chips
+          // Filters Bar: Format, Status & Genre Chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
             child: Row(
               children: [
-                // Genre Dropdown / Chips
+                // Format filter chips
+                ..._formats.map((f) {
+                  final val = f['value']!;
+                  final isSelected = (state.format == null && val == 'ALL') || state.format == val;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 6.0),
+                    child: FilterChip(
+                      label: Text(f['label']!),
+                      selected: isSelected,
+                      onSelected: (_) {
+                        ref.read(exploreStateProvider.notifier).onFormatSelected(val);
+                      },
+                      selectedColor: AppTheme.violet.withValues(alpha: 0.2),
+                      checkmarkColor: AppTheme.violetLight,
+                      backgroundColor: isDark ? AppTheme.darkSurface : AppTheme.lightSurfaceVariant,
+                      side: BorderSide(
+                        color: isSelected
+                            ? AppTheme.violetLight
+                            : (isDark ? const Color(0xFF2E2E38) : const Color(0xFFE5E7EB)),
+                      ),
+                    ),
+                  );
+                }),
+                // Status filter chips
+                ..._statuses.map((s) {
+                  final val = s['value']!;
+                  final isSelected = (state.status == null && val == 'ALL') || state.status == val;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 6.0),
+                    child: FilterChip(
+                      label: Text(s['label']!),
+                      selected: isSelected,
+                      onSelected: (_) {
+                        ref.read(exploreStateProvider.notifier).onStatusSelected(val);
+                      },
+                      selectedColor: AppTheme.violet.withValues(alpha: 0.2),
+                      checkmarkColor: AppTheme.violetLight,
+                      backgroundColor: isDark ? AppTheme.darkSurface : AppTheme.lightSurfaceVariant,
+                      side: BorderSide(
+                        color: isSelected
+                            ? AppTheme.violetLight
+                            : (isDark ? const Color(0xFF2E2E38) : const Color(0xFFE5E7EB)),
+                      ),
+                    ),
+                  );
+                }),
+                // Genre filter chips
                 ..._genres.map((g) {
                   final isSelected = (state.genre == null && g == 'All Genres') || state.genre == g;
                   return Padding(
