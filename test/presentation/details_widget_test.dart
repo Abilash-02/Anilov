@@ -19,7 +19,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          animeDetailsProvider(16498).overrideWith((ref) => Future.value(sampleAnime)),
+          animeDetailsProvider(16498).overrideWith((ref) => sampleAnime),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,

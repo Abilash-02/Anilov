@@ -298,9 +298,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
     if (state.error != null && state.items.isEmpty) {
       return Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.cloud_off_rounded, size: 56, color: AppTheme.violetLight),
@@ -334,6 +335,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(

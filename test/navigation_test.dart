@@ -32,7 +32,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            homeDataProvider.overrideWith((ref) => Future.value(sampleHomeData)),
+            homeDataProvider.overrideWith((ref) => sampleHomeData),
           ],
           child: MaterialApp(
             theme: AppTheme.darkTheme,
@@ -50,6 +50,11 @@ void main() {
     });
 
     testWidgets('ExploreScreen renders search and filter chips', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(

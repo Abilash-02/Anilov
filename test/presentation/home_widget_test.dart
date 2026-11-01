@@ -22,7 +22,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          homeDataProvider.overrideWith((ref) => Future.value(sampleHomeData)),
+          homeDataProvider.overrideWith((ref) => sampleHomeData),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
@@ -58,7 +58,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          homeDataProvider.overrideWith((ref) => Future.error('Network timeout error')),
+          homeDataProvider.overrideWith((ref) => throw Exception('Network timeout error')),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
