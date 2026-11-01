@@ -1,7 +1,6 @@
 // Unit and integration tests for SQLite database persistence
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:anilov/features/watchlist/data/app_database.dart';
 import 'package:anilov/features/watchlist/data/history_repository.dart';

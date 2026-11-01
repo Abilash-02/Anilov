@@ -2,13 +2,13 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../anime/domain/models/anime_media.dart';
-import '../../domain/models/history_item.dart';
-import '../../domain/models/watch_status.dart';
-import '../../domain/models/watchlist_item.dart';
-import '../data/app_database.dart';
-import '../data/history_repository.dart';
-import '../data/watchlist_repository.dart';
+import 'package:anilov/features/anime/domain/models/anime_media.dart';
+import 'package:anilov/features/watchlist/data/app_database.dart';
+import 'package:anilov/features/watchlist/data/history_repository.dart';
+import 'package:anilov/features/watchlist/data/watchlist_repository.dart';
+import 'package:anilov/features/watchlist/domain/models/history_item.dart';
+import 'package:anilov/features/watchlist/domain/models/watch_status.dart';
+import 'package:anilov/features/watchlist/domain/models/watchlist_item.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();

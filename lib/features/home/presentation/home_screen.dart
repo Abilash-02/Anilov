@@ -165,10 +165,10 @@ class HomeScreen extends ConsumerWidget {
               ],
 
               // Continue Watching Section (RUN 3 Persistence)
-              if (continueWatchingAsync.valueOrNull != null &&
-                  continueWatchingAsync.valueOrNull!.isNotEmpty) ...[
+              if (continueWatchingAsync.asData?.value != null &&
+                  continueWatchingAsync.asData!.value.isNotEmpty) ...[
                 ContinueWatchingSection(
-                  items: continueWatchingAsync.valueOrNull!,
+                  items: continueWatchingAsync.asData!.value,
                   onSeeAll: () => context.go('/watchlist'),
                 ),
                 const SizedBox(height: 24),

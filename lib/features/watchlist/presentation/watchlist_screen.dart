@@ -136,7 +136,7 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
     final watchlistAsync = ref.watch(watchlistNotifierProvider);
     final countsAsync = ref.watch(watchlistCountsProvider);
 
-    final counts = countsAsync.valueOrNull ?? {};
+    final counts = countsAsync.asData?.value ?? {};
     final totalCount = counts.values.fold<int>(0, (sum, val) => sum + val);
 
     return Scaffold(

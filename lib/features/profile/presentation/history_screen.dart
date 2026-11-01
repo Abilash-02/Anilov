@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../watchlist/domain/models/history_item.dart';
 import '../../watchlist/presentation/providers/watchlist_providers.dart';
 
 class HistoryScreen extends ConsumerWidget {

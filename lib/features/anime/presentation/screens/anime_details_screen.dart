@@ -8,6 +8,7 @@ import '../../../watchlist/domain/models/watch_status.dart';
 import '../../../watchlist/domain/models/watchlist_item.dart';
 import '../../../watchlist/presentation/providers/watchlist_providers.dart';
 import '../../../watchlist/presentation/widgets/watchlist_edit_sheet.dart';
+import '../../domain/models/anime_media.dart';
 import '../providers/anime_providers.dart';
 
 class AnimeDetailsScreen extends ConsumerStatefulWidget {
@@ -274,7 +275,7 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
                     _buildWatchlistSection(
                       context,
                       anime,
-                      watchlistItemAsync.valueOrNull,
+                      watchlistItemAsync.asData?.value,
                       isDark,
                     ),
                     const SizedBox(height: 20),
