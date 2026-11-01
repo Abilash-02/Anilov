@@ -93,6 +93,7 @@ void main() {
     );
 
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
     await tester.pumpAndSettle();
 
     expect(find.text('Failed to load anime details'), findsOneWidget);

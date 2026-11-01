@@ -78,6 +78,7 @@ void main() {
     );
 
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
     await tester.pumpAndSettle();
 
     expect(find.text('Unable to load anime catalog'), findsOneWidget);
