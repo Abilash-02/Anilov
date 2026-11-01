@@ -42,7 +42,7 @@ void main() {
       );
 
       expect(find.text('Anilov'), findsNothing);
-      expect(find.byType(CustomPaint), findsOneWidget);
+      expect(find.descendant(of: find.byType(AnilovLogo), matching: find.byType(CustomPaint)), findsOneWidget);
     });
   });
 
