@@ -43,7 +43,7 @@ class AppTheme {
       onSurface: darkOnSurface,
       surfaceContainerHighest: darkSurfaceVariant,
       onSurfaceVariant: darkOnSurfaceMuted,
-      outline: Color(0xFF374151),
+      outline: const Color(0xFF374151),
     );
 
     return ThemeData(
@@ -130,7 +130,7 @@ class AppTheme {
     final colorScheme = const ColorScheme.light().copyWith(
       primary: violetDark,
       onPrimary: Colors.white,
-      primaryContainer: Color(0xFFEDE9FE),
+      primaryContainer: const Color(0xFFEDE9FE),
       onPrimaryContainer: deepIndigo,
       secondary: violet,
       onSecondary: Colors.white,
@@ -138,7 +138,7 @@ class AppTheme {
       onSurface: lightOnSurface,
       surfaceContainerHighest: lightSurfaceVariant,
       onSurfaceVariant: lightOnSurfaceMuted,
-      outline: Color(0xFFE5E7EB),
+      outline: const Color(0xFFE5E7EB),
     );
 
     return ThemeData(

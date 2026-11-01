@@ -43,7 +43,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _adultContent = !val;
               });
             },
-            activeColor: AppTheme.violet,
+            activeThumbColor: AppTheme.violet,
             tileColor: isDark ? AppTheme.darkSurface : AppTheme.lightSurfaceVariant,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -64,7 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _notifications = val;
               });
             },
-            activeColor: AppTheme.violet,
+            activeThumbColor: AppTheme.violet,
             tileColor: isDark ? AppTheme.darkSurface : AppTheme.lightSurfaceVariant,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),

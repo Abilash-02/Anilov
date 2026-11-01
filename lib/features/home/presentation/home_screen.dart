@@ -101,7 +101,7 @@ class HomeScreen extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                Text(
+                const Text(
                   'RUN 2',
                   style: TextStyle(
                     fontSize: 12,
@@ -190,7 +190,7 @@ class HomeScreen extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                Text(
+                const Text(
                   'RUN 2',
                   style: TextStyle(
                     fontSize: 12,

@@ -9,7 +9,7 @@ class WatchlistScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final statuses = ['Watching', 'Planning', 'Completed', 'On Hold', 'Dropped'];
+    const statuses = ['Watching', 'Planning', 'Completed', 'On Hold', 'Dropped'];
 
     return Scaffold(
       appBar: AppBar(
