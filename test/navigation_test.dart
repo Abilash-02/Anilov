@@ -18,21 +18,20 @@ void main() {
   });
 
   final sampleAnime = AnimeMedia.fromJson(sampleAnimeJson);
-  final sampleHomeData = HomeData(
-    featured: [sampleAnime],
-    trending: [sampleAnime],
-    popular: [sampleAnime],
-    topRated: [sampleAnime],
-    airingToday: [sampleAnime],
-    currentlyAiring: [sampleAnime],
-  );
 
   group('Navigation & Tab Screens Render Tests', () {
     testWidgets('HomeScreen renders with live anime sections', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final fakeRepo = FakeAnimeRepository([sampleAnime]);
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            homeDataProvider.overrideWith((ref) => sampleHomeData),
+            animeRepositoryProvider.overrideWithValue(fakeRepo),
           ],
           child: MaterialApp(
             theme: AppTheme.darkTheme,
@@ -42,7 +41,7 @@ void main() {
       );
 
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.text('Trending Now'), findsOneWidget);
       expect(find.text('Airing Today'), findsOneWidget);

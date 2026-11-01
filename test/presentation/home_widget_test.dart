@@ -9,20 +9,19 @@ import '../fixtures/anime_fixtures.dart';
 
 void main() {
   final sampleAnime = AnimeMedia.fromJson(sampleAnimeJson);
-  final sampleHomeData = HomeData(
-    featured: [sampleAnime],
-    trending: [sampleAnime],
-    popular: [sampleAnime],
-    topRated: [sampleAnime],
-    airingToday: [sampleAnime],
-    currentlyAiring: [sampleAnime],
-  );
 
   testWidgets('HomeScreen renders search entry point, genre chips, and anime sections', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final fakeRepo = FakeAnimeRepository([sampleAnime]);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          homeDataProvider.overrideWith((ref) => sampleHomeData),
+          animeRepositoryProvider.overrideWithValue(fakeRepo),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
@@ -31,9 +30,8 @@ void main() {
       ),
     );
 
-    // Initial pump
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 100));
 
     // Verify search bar entry point
     expect(find.text('Search anime titles, genres, studios...'), findsOneWidget);
@@ -55,10 +53,12 @@ void main() {
   });
 
   testWidgets('HomeScreen displays error state and retry button on failure', (tester) async {
+    final fakeRepo = FakeAnimeRepository([sampleAnime], shouldFail: true);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          homeDataProvider.overrideWith((ref) => throw Exception('Network timeout error')),
+          animeRepositoryProvider.overrideWithValue(fakeRepo),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
@@ -68,10 +68,10 @@ void main() {
     );
 
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Unable to load anime catalog'), findsOneWidget);
-    expect(find.text('Network timeout error'), findsOneWidget);
+    expect(find.textContaining('Network timeout error'), findsOneWidget);
     expect(find.text('Retry'), findsOneWidget);
   });
 }

@@ -9,43 +9,6 @@ import 'package:anilov/features/anime/presentation/providers/anime_providers.dar
 import 'package:anilov/features/explore/presentation/explore_screen.dart';
 import '../fixtures/anime_fixtures.dart';
 
-class FakeAnimeRepository implements AnimeRepository {
-  final List<AnimeMedia> items;
-  FakeAnimeRepository(this.items);
-
-  @override
-  Future<List<AnimeMedia>> getTrendingAnime({int page = 1, int perPage = 10}) async => items;
-  @override
-  Future<List<AnimeMedia>> getPopularAnime({int page = 1, int perPage = 10}) async => items;
-  @override
-  Future<List<AnimeMedia>> getTopRatedAnime({int page = 1, int perPage = 10}) async => items;
-  @override
-  Future<List<AnimeMedia>> getAiringTodayAnime({int page = 1, int perPage = 10}) async => items;
-  @override
-  Future<List<AnimeMedia>> getCurrentlyAiringAnime({int page = 1, int perPage = 10}) async => items;
-  @override
-  Future<AnimeMedia> getAnimeDetails(int id) async => items.first;
-  @override
-  Future<PaginatedAnime> searchAnime({
-    String? query,
-    String? genre,
-    String? format,
-    String? status,
-    int? year,
-    String sort = 'TRENDING_DESC',
-    int page = 1,
-    int perPage = 20,
-  }) async {
-    if (query == 'empty') {
-      return const PaginatedAnime(pageInfo: PageInfo(), items: []);
-    }
-    return PaginatedAnime(pageInfo: const PageInfo(total: 1), items: items);
-  }
-
-  @override
-  Future<List<String>> getGenres() async => ['Action', 'Comedy', 'Drama'];
-}
-
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});

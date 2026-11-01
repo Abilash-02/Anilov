@@ -16,10 +16,12 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    final fakeRepo = FakeAnimeRepository([sampleAnime]);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          animeDetailsProvider(16498).overrideWith((ref) => sampleAnime),
+          animeRepositoryProvider.overrideWithValue(fakeRepo),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
@@ -29,7 +31,7 @@ void main() {
     );
 
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 100));
 
     // Verify title and metadata
     expect(find.text('Attack on Titan'), findsOneWidget);
@@ -48,7 +50,7 @@ void main() {
 
     // Tap Read more to expand
     await tester.tap(find.text('Read more'));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('Show less'), findsOneWidget);
 
     // Official Trailer
@@ -71,11 +73,12 @@ void main() {
   });
 
   testWidgets('AnimeDetailsScreen renders error state and retry button on failure', (tester) async {
+    final fakeRepo = FakeAnimeRepository([sampleAnime], shouldFail: true);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          animeDetailsProvider(16498)
-              .overrideWith((ref) => throw Exception('Failed to load anime details')),
+          animeRepositoryProvider.overrideWithValue(fakeRepo),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
@@ -85,7 +88,7 @@ void main() {
     );
 
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Failed to load anime details'), findsOneWidget);
     expect(find.text('Retry'), findsOneWidget);

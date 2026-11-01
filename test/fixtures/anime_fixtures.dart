@@ -1,5 +1,8 @@
 // Test JSON fixtures simulating AniList GraphQL responses.
 
+import 'package:anilov/features/anime/data/anime_repository.dart';
+import 'package:anilov/features/anime/domain/models/anime_media.dart';
+
 const Map<String, dynamic> sampleAnimeJson = {
   'id': 16498,
   'idMal': 16498,
@@ -110,3 +113,68 @@ const Map<String, dynamic> samplePageJson = {
     ]
   }
 };
+
+class FakeAnimeRepository implements AnimeRepository {
+  final List<AnimeMedia> items;
+  final bool shouldFail;
+
+  FakeAnimeRepository(this.items, {this.shouldFail = false});
+
+  @override
+  Future<List<AnimeMedia>> getTrendingAnime({int page = 1, int perPage = 10}) async {
+    if (shouldFail) throw Exception('Network timeout error');
+    return items;
+  }
+
+  @override
+  Future<List<AnimeMedia>> getPopularAnime({int page = 1, int perPage = 10}) async {
+    if (shouldFail) throw Exception('Network timeout error');
+    return items;
+  }
+
+  @override
+  Future<List<AnimeMedia>> getTopRatedAnime({int page = 1, int perPage = 10}) async {
+    if (shouldFail) throw Exception('Network timeout error');
+    return items;
+  }
+
+  @override
+  Future<List<AnimeMedia>> getAiringTodayAnime({int page = 1, int perPage = 10}) async {
+    if (shouldFail) throw Exception('Network timeout error');
+    return items;
+  }
+
+  @override
+  Future<List<AnimeMedia>> getCurrentlyAiringAnime({int page = 1, int perPage = 10}) async {
+    if (shouldFail) throw Exception('Network timeout error');
+    return items;
+  }
+
+  @override
+  Future<AnimeMedia> getAnimeDetails(int id) async {
+    if (shouldFail) throw Exception('Failed to load anime details');
+    return items.first;
+  }
+
+  @override
+  Future<PaginatedAnime> searchAnime({
+    String? query,
+    String? genre,
+    String? format,
+    String? status,
+    int? year,
+    String sort = 'TRENDING_DESC',
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    if (shouldFail) throw Exception('Search error');
+    if (query == 'empty') {
+      return const PaginatedAnime(pageInfo: PageInfo(), items: []);
+    }
+    return PaginatedAnime(pageInfo: const PageInfo(total: 1), items: items);
+  }
+
+  @override
+  Future<List<String>> getGenres() async => ['Action', 'Adventure', 'Comedy', 'Drama'];
+}
+
