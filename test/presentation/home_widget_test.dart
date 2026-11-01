@@ -78,10 +78,7 @@ void main() {
     );
 
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 200));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 200));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('Unable to load anime catalog'), findsOneWidget);
     expect(find.textContaining('Network timeout error'), findsOneWidget);

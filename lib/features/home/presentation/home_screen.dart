@@ -41,15 +41,8 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
       body: homeAsync.when(
-        loading: () => ListView(
-          padding: const EdgeInsets.symmetric(vertical: 12.0),
-          children: const [
-            AnimeHorizontalSection(title: 'Featured', isLoading: true),
-            SizedBox(height: 20),
-            AnimeHorizontalSection(title: 'Airing Today', isLoading: true),
-            SizedBox(height: 20),
-            AnimeHorizontalSection(title: 'Trending Now', isLoading: true),
-          ],
+        loading: () => const Center(
+          child: CircularProgressIndicator(),
         ),
         error: (err, stack) => Center(
           child: SingleChildScrollView(
