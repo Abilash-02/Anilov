@@ -9,6 +9,7 @@ import 'package:anilov/features/explore/presentation/explore_screen.dart';
 import 'package:anilov/features/home/presentation/home_screen.dart';
 import 'package:anilov/features/profile/presentation/profile_screen.dart';
 import 'package:anilov/features/schedule/presentation/schedule_screen.dart';
+import 'package:anilov/features/watchlist/presentation/providers/watchlist_providers.dart';
 import 'package:anilov/features/watchlist/presentation/watchlist_screen.dart';
 import 'fixtures/anime_fixtures.dart';
 
@@ -32,6 +33,7 @@ void main() {
         ProviderScope(
           overrides: [
             animeRepositoryProvider.overrideWithValue(fakeRepo),
+            watchlistRepositoryProvider.overrideWithValue(FakeWatchlistRepository()),
           ],
           child: MaterialApp(
             theme: AppTheme.darkTheme,
@@ -84,15 +86,24 @@ void main() {
     });
 
     testWidgets('WatchlistScreen renders status tabs and empty state', (tester) async {
+      final fakeWatchlist = FakeWatchlistRepository();
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.darkTheme,
-          home: const WatchlistScreen(),
+        ProviderScope(
+          overrides: [
+            watchlistRepositoryProvider.overrideWithValue(fakeWatchlist),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.darkTheme,
+            home: const WatchlistScreen(),
+          ),
         ),
       );
 
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
       expect(find.text('My Watchlist'), findsOneWidget);
-      expect(find.text('Watching'), findsOneWidget);
+      expect(find.textContaining('Watching'), findsOneWidget);
       expect(find.text('Your Watchlist is Empty'), findsOneWidget);
     });
 

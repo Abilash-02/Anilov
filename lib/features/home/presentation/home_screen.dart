@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../anime/presentation/providers/anime_providers.dart';
 import '../../common/widgets/anilov_logo.dart';
+import '../../watchlist/presentation/providers/watchlist_providers.dart';
 import 'widgets/anime_horizontal_section.dart';
+import 'widgets/continue_watching_section.dart';
 import 'widgets/featured_carousel.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -14,6 +16,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final homeAsync = ref.watch(homeDataProvider);
+    final continueWatchingAsync = ref.watch(continueWatchingProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -158,6 +161,16 @@ class HomeScreen extends ConsumerWidget {
               // Featured Carousel
               if (data.featured.isNotEmpty) ...[
                 FeaturedCarousel(items: data.featured),
+                const SizedBox(height: 24),
+              ],
+
+              // Continue Watching Section (RUN 3 Persistence)
+              if (continueWatchingAsync.valueOrNull != null &&
+                  continueWatchingAsync.valueOrNull!.isNotEmpty) ...[
+                ContinueWatchingSection(
+                  items: continueWatchingAsync.valueOrNull!,
+                  onSeeAll: () => context.go('/watchlist'),
+                ),
                 const SizedBox(height: 24),
               ],
 

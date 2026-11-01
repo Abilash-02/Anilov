@@ -2,6 +2,11 @@
 
 import 'package:anilov/features/anime/data/anime_repository.dart';
 import 'package:anilov/features/anime/domain/models/anime_media.dart';
+import 'package:anilov/features/watchlist/data/history_repository.dart';
+import 'package:anilov/features/watchlist/data/watchlist_repository.dart';
+import 'package:anilov/features/watchlist/domain/models/history_item.dart';
+import 'package:anilov/features/watchlist/domain/models/watch_status.dart';
+import 'package:anilov/features/watchlist/domain/models/watchlist_item.dart';
 
 const Map<String, dynamic> sampleAnimeJson = {
   'id': 16498,
@@ -176,5 +181,186 @@ class FakeAnimeRepository implements AnimeRepository {
 
   @override
   Future<List<String>> getGenres() async => ['Action', 'Adventure', 'Comedy', 'Drama'];
+}
+
+class FakeWatchlistRepository implements WatchlistRepository {
+  final Map<int, WatchlistItem> _items = {};
+
+  FakeWatchlistRepository([List<WatchlistItem> initialItems = const []]) {
+    for (final item in initialItems) {
+      _items[item.animeId] = item;
+    }
+  }
+
+  @override
+  Future<List<WatchlistItem>> getWatchlist({
+    WatchStatus? status,
+    String? searchQuery,
+    String sortBy = 'updated_at',
+    bool ascending = false,
+  }) async {
+    var result = _items.values.toList();
+    if (status != null) {
+      result = result.where((it) => it.status == status).toList();
+    }
+    if (searchQuery != null && searchQuery.trim().isNotEmpty) {
+      final q = searchQuery.toLowerCase().trim();
+      result = result.where((it) => it.title.toLowerCase().contains(q)).toList();
+    }
+    result.sort((a, b) {
+      int cmp;
+      if (sortBy == 'title') {
+        cmp = a.title.compareTo(b.title);
+      } else if (sortBy == 'progress') {
+        cmp = a.progress.compareTo(b.progress);
+      } else if (sortBy == 'score') {
+        cmp = (a.score ?? 0.0).compareTo(b.score ?? 0.0);
+      } else {
+        cmp = a.updatedAt.compareTo(b.updatedAt);
+      }
+      return ascending ? cmp : -cmp;
+    });
+    return result;
+  }
+
+  @override
+  Future<WatchlistItem?> getWatchlistItem(int animeId) async => _items[animeId];
+
+  @override
+  Future<void> saveWatchlistItem(WatchlistItem item) async {
+    _items[item.animeId] = item;
+  }
+
+  @override
+  Future<void> updateProgress(int animeId, int progress) async {
+    final cur = _items[animeId];
+    if (cur == null) return;
+    var st = cur.status;
+    if (cur.totalEpisodes != null && cur.totalEpisodes! > 0 && progress >= cur.totalEpisodes!) {
+      st = WatchStatus.completed;
+    } else if (st == WatchStatus.planning && progress > 0) {
+      st = WatchStatus.watching;
+    }
+    _items[animeId] = cur.copyWith(
+      progress: progress,
+      status: st,
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  @override
+  Future<void> updateStatus(int animeId, WatchStatus status) async {
+    final cur = _items[animeId];
+    if (cur == null) return;
+    _items[animeId] = cur.copyWith(
+      status: status,
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  @override
+  Future<void> updateScore(int animeId, double? score) async {
+    final cur = _items[animeId];
+    if (cur == null) return;
+    _items[animeId] = cur.copyWith(
+      score: score,
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  @override
+  Future<void> deleteWatchlistItem(int animeId) async {
+    _items.remove(animeId);
+  }
+
+  @override
+  Future<bool> isInWatchlist(int animeId) async => _items.containsKey(animeId);
+
+  @override
+  Future<List<WatchlistItem>> getContinueWatching({int limit = 10}) async {
+    final list = _items.values
+        .where((it) =>
+            it.status == WatchStatus.watching ||
+            (it.progress > 0 &&
+                it.status != WatchStatus.completed &&
+                it.status != WatchStatus.dropped))
+        .toList();
+    list.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    return list.take(limit).toList();
+  }
+
+  @override
+  Future<Map<WatchStatus, int>> getWatchlistCounts() async {
+    final counts = <WatchStatus, int>{
+      WatchStatus.watching: 0,
+      WatchStatus.planning: 0,
+      WatchStatus.completed: 0,
+      WatchStatus.onHold: 0,
+      WatchStatus.dropped: 0,
+    };
+    for (final it in _items.values) {
+      counts[it.status] = (counts[it.status] ?? 0) + 1;
+    }
+    return counts;
+  }
+}
+
+class FakeHistoryRepository implements HistoryRepository {
+  final List<HistoryItem> _items = [];
+  int _nextId = 1;
+
+  FakeHistoryRepository([List<HistoryItem> initialItems = const []]) {
+    for (final it in initialItems) {
+      _items.add(it.copyWith(id: it.id ?? _nextId++));
+    }
+  }
+
+  @override
+  Future<void> recordHistory({
+    required int animeId,
+    required String title,
+    String? coverUrl,
+    required int episode,
+  }) async {
+    _items.removeWhere((it) => it.animeId == animeId && it.episode == episode);
+    _items.insert(
+      0,
+      HistoryItem(
+        id: _nextId++,
+        animeId: animeId,
+        title: title,
+        coverUrl: coverUrl,
+        episode: episode,
+        watchedAt: DateTime.now(),
+      ),
+    );
+  }
+
+  @override
+  Future<List<HistoryItem>> getHistory({int limit = 50, int offset = 0}) async {
+    return _items.skip(offset).take(limit).toList();
+  }
+
+  @override
+  Future<void> deleteHistoryItem(int id) async {
+    _items.removeWhere((it) => it.id == id);
+  }
+
+  @override
+  Future<void> deleteHistoryForAnime(int animeId) async {
+    _items.removeWhere((it) => it.animeId == animeId);
+  }
+
+  @override
+  Future<void> clearHistory() async {
+    _items.clear();
+  }
+
+  @override
+  Future<int?> getLatestWatchedEpisode(int animeId) async {
+    final match = _items.where((it) => it.animeId == animeId);
+    if (match.isEmpty) return null;
+    return match.first.episode;
+  }
 }
 

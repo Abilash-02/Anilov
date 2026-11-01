@@ -5,6 +5,7 @@ import 'package:anilov/core/theme/app_theme.dart';
 import 'package:anilov/features/anime/domain/models/anime_media.dart';
 import 'package:anilov/features/anime/presentation/providers/anime_providers.dart';
 import 'package:anilov/features/home/presentation/home_screen.dart';
+import 'package:anilov/features/watchlist/presentation/providers/watchlist_providers.dart';
 import '../fixtures/anime_fixtures.dart';
 
 void main() {
@@ -22,6 +23,7 @@ void main() {
       ProviderScope(
         overrides: [
           animeRepositoryProvider.overrideWithValue(fakeRepo),
+          watchlistRepositoryProvider.overrideWithValue(FakeWatchlistRepository()),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
@@ -69,6 +71,7 @@ void main() {
           homeDataProvider.overrideWith((ref) async {
             throw Exception('Network timeout error');
           }),
+          watchlistRepositoryProvider.overrideWithValue(FakeWatchlistRepository()),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,

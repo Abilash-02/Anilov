@@ -5,6 +5,7 @@ import 'package:anilov/core/theme/app_theme.dart';
 import 'package:anilov/features/anime/domain/models/anime_media.dart';
 import 'package:anilov/features/anime/presentation/providers/anime_providers.dart';
 import 'package:anilov/features/anime/presentation/screens/anime_details_screen.dart';
+import 'package:anilov/features/watchlist/presentation/providers/watchlist_providers.dart';
 import '../fixtures/anime_fixtures.dart';
 
 void main() {
@@ -17,11 +18,13 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     final fakeRepo = FakeAnimeRepository([sampleAnime]);
+    final fakeWatchlist = FakeWatchlistRepository();
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           animeRepositoryProvider.overrideWithValue(fakeRepo),
+          watchlistRepositoryProvider.overrideWithValue(fakeWatchlist),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
@@ -68,8 +71,8 @@ void main() {
     // Watchlist action button
     expect(find.text('Add to Watchlist'), findsOneWidget);
     await tester.tap(find.text('Add to Watchlist'));
-    await tester.pump();
-    expect(find.text('Watchlist & offline persistence will activate in RUN 3.'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.text('Status'), findsOneWidget);
   });
 
   testWidgets('AnimeDetailsScreen renders error state and retry button on failure', (tester) async {
@@ -84,6 +87,7 @@ void main() {
           animeDetailsProvider(16498).overrideWith((ref) async {
             throw Exception('Failed to load anime details');
           }),
+          watchlistRepositoryProvider.overrideWithValue(FakeWatchlistRepository()),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,

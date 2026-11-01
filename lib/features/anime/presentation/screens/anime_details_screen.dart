@@ -4,6 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../watchlist/domain/models/watch_status.dart';
+import '../../../watchlist/domain/models/watchlist_item.dart';
+import '../../../watchlist/presentation/providers/watchlist_providers.dart';
+import '../../../watchlist/presentation/widgets/watchlist_edit_sheet.dart';
 import '../providers/anime_providers.dart';
 
 class AnimeDetailsScreen extends ConsumerStatefulWidget {
@@ -24,6 +28,7 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final detailsAsync = ref.watch(animeDetailsProvider(widget.id));
+    final watchlistItemAsync = ref.watch(watchlistItemProvider(widget.id));
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -265,22 +270,12 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Watchlist button stub (persistence activates in RUN 3)
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Watchlist & offline persistence will activate in RUN 3.'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.bookmark_add_outlined),
-                        label: const Text('Add to Watchlist'),
-                      ),
+                    // Watchlist Controls (Persistence via sqflite)
+                    _buildWatchlistSection(
+                      context,
+                      anime,
+                      watchlistItemAsync.valueOrNull,
+                      isDark,
                     ),
                     const SizedBox(height: 20),
 
@@ -596,6 +591,231 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
       width: 1,
       height: 24,
       color: isDark ? const Color(0xFF2E2E38) : const Color(0xFFE5E7EB),
+    );
+  }
+
+  Widget _buildWatchlistSection(
+    BuildContext context,
+    AnimeMedia anime,
+    WatchlistItem? watchlistItem,
+    bool isDark,
+  ) {
+    if (watchlistItem == null) {
+      return SizedBox(
+        width: double.infinity,
+        height: 48,
+        child: FilledButton.icon(
+          onPressed: () {
+            WatchlistEditSheet.show(
+              context,
+              animeId: anime.id,
+              title: anime.title.displayTitle,
+              coverUrl: anime.coverImage.displayUrl,
+              format: anime.displayFormat,
+              totalEpisodes: anime.episodes,
+            );
+          },
+          icon: const Icon(Icons.bookmark_add_outlined),
+          label: const Text('Add to Watchlist', style: TextStyle(fontWeight: FontWeight.w700)),
+        ),
+      );
+    }
+
+    final statusColor = _statusColor(watchlistItem.status);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkSurface : AppTheme.lightSurfaceVariant,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? const Color(0xFF2E2E38) : const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              InkWell(
+                onTap: () {
+                  WatchlistEditSheet.show(
+                    context,
+                    animeId: anime.id,
+                    title: anime.title.displayTitle,
+                    coverUrl: anime.coverImage.displayUrl,
+                    format: anime.displayFormat,
+                    totalEpisodes: anime.episodes,
+                    existingItem: watchlistItem,
+                  );
+                },
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: statusColor.withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle_outline, size: 14, color: statusColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        watchlistItem.status.displayName,
+                        style: TextStyle(
+                          color: statusColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(Icons.arrow_drop_down, size: 16, color: statusColor),
+                    ],
+                  ),
+                ),
+              ),
+              if (watchlistItem.score != null) ...[
+                const SizedBox(width: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.star_rounded, size: 16, color: Colors.amber),
+                    const SizedBox(width: 2),
+                    Text(
+                      '${watchlistItem.score!.toStringAsFixed(1)} / 10',
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ],
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 20),
+                tooltip: 'Edit Watchlist Entry',
+                onPressed: () {
+                  WatchlistEditSheet.show(
+                    context,
+                    animeId: anime.id,
+                    title: anime.title.displayTitle,
+                    coverUrl: anime.coverImage.displayUrl,
+                    format: anime.displayFormat,
+                    totalEpisodes: anime.episodes,
+                    existingItem: watchlistItem,
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, size: 20, color: Colors.redAccent),
+                tooltip: 'Remove from Watchlist',
+                onPressed: () => _confirmRemoveWatchlist(context, anime),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Progress row with - and + buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                anime.episodes != null
+                    ? 'Progress: ${watchlistItem.progress} / ${anime.episodes} eps'
+                    : 'Progress: ${watchlistItem.progress} eps',
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+              ),
+              Row(
+                children: [
+                  IconButton.filledTonal(
+                    icon: const Icon(Icons.remove, size: 18),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: watchlistItem.progress > 0
+                        ? () {
+                            ref
+                                .read(watchlistNotifierProvider.notifier)
+                                .decrementProgress(anime.id);
+                          }
+                        : null,
+                  ),
+                  const SizedBox(width: 6),
+                  IconButton.filledTonal(
+                    icon: const Icon(Icons.add, size: 18),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: watchlistItem.canIncrement
+                        ? () {
+                            ref.read(watchlistNotifierProvider.notifier).incrementProgress(
+                                  anime.id,
+                                  title: anime.title.displayTitle,
+                                  coverUrl: anime.coverImage.displayUrl,
+                                );
+                          }
+                        : null,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: watchlistItem.totalEpisodes != null && watchlistItem.totalEpisodes! > 0
+                  ? watchlistItem.progressFraction
+                  : (watchlistItem.progress > 0 ? 1.0 : 0.0),
+              minHeight: 6,
+              backgroundColor: isDark ? AppTheme.darkSurfaceVariant : AppTheme.lightSurface,
+              valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _statusColor(WatchStatus status) {
+    switch (status) {
+      case WatchStatus.watching:
+        return AppTheme.violetLight;
+      case WatchStatus.planning:
+        return Colors.blue;
+      case WatchStatus.completed:
+        return Colors.green;
+      case WatchStatus.onHold:
+        return Colors.amber;
+      case WatchStatus.dropped:
+        return Colors.redAccent;
+    }
+  }
+
+  void _confirmRemoveWatchlist(BuildContext context, AnimeMedia anime) {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Remove from Watchlist?'),
+        content: Text(
+          'Are you sure you want to remove "${anime.title.displayTitle}" and your progress from your watchlist?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
+            onPressed: () {
+              Navigator.pop(dialogCtx);
+              ref.read(watchlistNotifierProvider.notifier).removeItem(anime.id);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Removed "${anime.title.displayTitle}" from watchlist'),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
     );
   }
 }

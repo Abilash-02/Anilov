@@ -15,6 +15,8 @@ dependencies:
   shared_preferences: ">=2.2.0 <3.0.0"
   dio: ">=5.4.0 <6.0.0"
   cached_network_image: ">=3.3.0 <5.0.0"
+  sqflite: ">=2.3.0 <3.0.0"
+  path: ">=1.9.0 <2.0.0"
 
 dev_dependencies:
   flutter_test:
@@ -23,6 +25,7 @@ dev_dependencies:
   flutter_launcher_icons: ">=0.13.1 <1.0.0"
   flutter_native_splash: ">=2.4.0 <3.0.0"
   mocktail: ">=1.0.0 <2.0.0"
+  sqflite_common_ffi: ">=2.3.0 <3.0.0"
 
 flutter:
   uses-material-design: true
