@@ -1,12 +1,12 @@
 # Anilov Project Progress
 
-## Current State: RUN 2 (Data, Home, Explore & Anime Details) — Completed
+## Current State: RUN 3 (Persistence & Watchlist) — Completed
 
 | Run | Title | Status | CI Status |
 |---|---|---|---|
 | **RUN 1** | Foundation | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41294758619`) |
 | **RUN 2** | Data, Home, Explore, Details | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41305607753`) |
-| **RUN 3** | Persistence & Watchlist | Not yet implemented | - |
+| **RUN 3** | Persistence & Watchlist | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41321261934`) |
 | **RUN 4** | Schedule & Sources | Not yet implemented | - |
 | **RUN 5** | Daily Updates & Polish | Not yet implemented | - |
 | **RUN 6** | Optional: AniList OAuth Sync | Not yet implemented | - |
@@ -64,17 +64,51 @@
   - YouTube trailer action button.
   - Official streaming external links (Crunchyroll, Netflix, etc.).
   - Related anime horizontal list with deep navigation.
-  - Watchlist button stubbed for RUN 3 persistence.
 - [x] **Comprehensive Test Suite** (32/32 tests passing in CI):
-  - `test/fixtures/anime_fixtures.dart`: Mock AniList data and `FakeAnimeRepository`.
-  - `test/models/anime_model_test.dart`: Serialization, deserialization, and null-safety (5 tests).
-  - `test/repository/anilist_repository_test.dart`: GraphQL queries and error handling (6 tests).
-  - `test/presentation/home_widget_test.dart`: Home loading, error, and content rendering (2 tests).
-  - `test/presentation/explore_widget_test.dart`: Explore search, filters, and results grid (2 tests).
-  - `test/presentation/details_widget_test.dart`: Anime details banner, metadata, and relations (2 tests).
-  - `test/theme_test.dart`: Material 3 theme tests (4 tests).
-  - `test/widget_test.dart`: Splash & onboarding widget tests (6 tests).
-  - `test/navigation_test.dart`: GoRouter tab navigation and routing (5 tests).
+  - Unit tests for models and repository, widget tests for Home, Explore, and Details.
+
+---
+
+## RUN 3 Deliverables (Completed)
+- [x] **SQLite Database Layer via sqflite** (`lib/features/watchlist/data/app_database.dart`):
+  - Local database `anilov.db` with indexed `watchlist` and `watch_history` tables.
+  - Supports dependency-injected test databases and automated schema migrations.
+  - Full offline persistence preserving data across app restarts.
+- [x] **Domain Models & Enums**:
+  - `WatchStatus` (`lib/features/watchlist/domain/models/watch_status.dart`): `Watching`, `Planning`, `Completed`, `On Hold`, `Dropped` with string mapping and database serialization.
+  - `WatchlistItem` (`lib/features/watchlist/domain/models/watchlist_item.dart`): Immutable item with progress fraction, episode clamping, completion detection, and `toMap`/`fromMap`.
+  - `HistoryItem` (`lib/features/watchlist/domain/models/history_item.dart`): Immutable watch history log entry with timestamp and episode tracking.
+- [x] **Repository Layer**:
+  - `WatchlistRepository` & `SqfliteWatchlistRepository` (`lib/features/watchlist/data/watchlist_repository.dart`): CRUD operations, duplicate prevention on insert, automatic completion when progress equals total episodes, status filtering, multi-column sorting (recently updated, title, progress, score), and status count aggregation.
+  - `HistoryRepository` & `SqfliteHistoryRepository` (`lib/features/watchlist/data/history_repository.dart`): Chronological history logging with deduplication of identical episodes to keep the latest watch timestamp, item deletion, and full history clearing.
+- [x] **Riverpod State Management** (`lib/features/watchlist/presentation/providers/watchlist_providers.dart`):
+  - `watchlistNotifierProvider`: AsyncNotifier managing watchlist items, reactive updates, progress increment/decrement, status changes, and deletion.
+  - `watchlistFilterProvider`: Filter state for status, search query, and sort column.
+  - `watchlistItemProvider(id)`: Single anime status observer for details view.
+  - `watchlistCountsProvider`: Real-time status counts for UI chip badges.
+  - `continueWatchingProvider`: Live query of in-progress/watching anime.
+  - `historyNotifierProvider`: AsyncNotifier managing chronological playback history.
+- [x] **Watchlist UI & Screen** (`lib/features/watchlist/presentation/`):
+  - `WatchlistScreen`: Filter bar with All/Status chips displaying counts (`Watching (3)`), in-app search bar, sort modal bottom sheet, custom empty states with "Explore Anime" navigation.
+  - `WatchlistCard`: Rounded poster image, title, status pill, score, linear progress indicator (`Ep 10 / 25` and percentage), quick `+1 Ep` button, and popup menu for edit/remove.
+  - `WatchlistEditSheet`: Modal bottom sheet to update status, fine-tune episode progress with `-` and `+` buttons, set ratings (0-10), and remove from watchlist.
+- [x] **Anime Details Screen Integration** (`lib/features/anime/presentation/screens/anime_details_screen.dart`):
+  - Connected the details screen's watchlist section to live SQLite persistence.
+  - Unsaved anime shows "Add to Watchlist" button opening `WatchlistEditSheet`.
+  - Saved anime displays current status badge, episode progress controls (`- 1` and `+ 1`), progress bar, edit action, and remove confirmation dialog.
+  - Incrementing progress automatically records to watch history and marks as completed if total episodes are reached.
+- [x] **Watch History Screen** (`lib/features/profile/presentation/history_screen.dart`):
+  - Chronological list of watched episodes with relative timestamps ("Just now", "Today at 14:30", "Yesterday", "2026-11-01").
+  - Episode badge, poster thumbnail, tap navigation to anime details, single item deletion, and "Clear All" with confirmation dialog.
+- [x] **Home Screen Continue Watching** (`lib/features/home/presentation/widgets/continue_watching_section.dart`):
+  - Added "Continue Watching" horizontal section displaying in-progress anime cards with progress bars and episode indicators.
+  - Tapping opens anime details, "My Watchlist" header action navigates to Watchlist tab.
+- [x] **Comprehensive Test Suite** (57/57 tests passing in CI):
+  - `test/models/watchlist_model_test.dart`: Serialization, deserialization, status conversions, and progress calculations (7 tests).
+  - `test/persistence/database_persistence_test.dart`: SQLite table creation, CRUD, duplicate prevention, progress incrementing, auto-completion, status filter, sorting, continue watching, history recording, and clearing (11 tests).
+  - `test/presentation/watchlist_widget_test.dart`: Watchlist empty state, card rendering, quick `+1 Ep` progress update, and deletion with confirmation dialog (3 tests).
+  - `test/presentation/history_widget_test.dart`: History empty state, item rendering, single item removal, and clear all confirmation (2 tests).
+  - Existing suite verified: `theme_test.dart` (4), `widget_test.dart` (6), `navigation_test.dart` (5), `anime_model_test.dart` (5), `anilist_repository_test.dart` (6), `home_widget_test.dart` (2), `explore_widget_test.dart` (2), `details_widget_test.dart` (2).
 - [x] **CI Verification & Artifacts**:
-  - Run ID: `41305607753` (Passed in 5m1s).
-  - Debug APK built and verified: `anilov-debug-apk` (Artifact ID: `13083427613`).
+  - Run ID: `41321261934` (Passed in 5m36s).
+  - Debug APK built and verified: `anilov-debug-apk` (uploaded to GitHub Actions).
