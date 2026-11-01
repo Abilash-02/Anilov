@@ -83,9 +83,11 @@ void main() {
 
     final exc = tester.takeException();
     if (exc != null) {
+      // ignore: avoid_print
       print('CAUGHT UNHANDLED EXCEPTION: $exc');
     }
     final texts = find.byType(Text).evaluate().map((e) => (e.widget as Text).data).toList();
+    // ignore: avoid_print
     print('ALL TEXTS IN TREE: $texts');
 
     expect(find.text('Unable to load anime catalog'), findsOneWidget);
