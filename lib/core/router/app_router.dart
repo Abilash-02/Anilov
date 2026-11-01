@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/anime/presentation/screens/anime_details_screen.dart';
 import '../../features/explore/presentation/explore_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
@@ -27,6 +28,14 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/onboarding',
       builder: (context, state) => const OnboardingScreen(),
+    ),
+    GoRoute(
+      path: '/anime/:id',
+      builder: (context, state) {
+        final idStr = state.pathParameters['id'] ?? '0';
+        final id = int.tryParse(idStr) ?? 0;
+        return AnimeDetailsScreen(id: id);
+      },
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {

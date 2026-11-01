@@ -1,11 +1,11 @@
 # Anilov Project Progress
 
-## Current State: RUN 1 (Foundation Completed)
+## Current State: RUN 2 (Data, Home, Explore & Anime Details)
 
 | Run | Title | Status | CI Status |
 |---|---|---|---|
 | **RUN 1** | Foundation | Completed | Passed (Artifact: `anilov-debug-apk`) |
-| **RUN 2** | Data, Home, Explore, Details | Not yet implemented | - |
+| **RUN 2** | Data, Home, Explore, Details | In Progress (Testing in CI) | Pending |
 | **RUN 3** | Persistence & Watchlist | Not yet implemented | - |
 | **RUN 4** | Schedule & Sources | Not yet implemented | - |
 | **RUN 5** | Daily Updates & Polish | Not yet implemented | - |

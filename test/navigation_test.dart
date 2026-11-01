@@ -1,38 +1,68 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:anilov/core/theme/app_theme.dart';
+import 'package:anilov/features/anime/domain/models/anime_media.dart';
+import 'package:anilov/features/anime/presentation/providers/anime_providers.dart';
 import 'package:anilov/features/explore/presentation/explore_screen.dart';
 import 'package:anilov/features/home/presentation/home_screen.dart';
 import 'package:anilov/features/profile/presentation/profile_screen.dart';
 import 'package:anilov/features/schedule/presentation/schedule_screen.dart';
 import 'package:anilov/features/watchlist/presentation/watchlist_screen.dart';
+import 'fixtures/anime_fixtures.dart';
 
 void main() {
-  group('Placeholder Screens Render Tests', () {
-    testWidgets('HomeScreen renders logo and sections', (tester) async {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
+  final sampleAnime = AnimeMedia.fromJson(sampleAnimeJson);
+  final sampleHomeData = HomeData(
+    featured: [sampleAnime],
+    trending: [sampleAnime],
+    popular: [sampleAnime],
+    topRated: [sampleAnime],
+    airingToday: [sampleAnime],
+    currentlyAiring: [sampleAnime],
+  );
+
+  group('Navigation & Tab Screens Render Tests', () {
+    testWidgets('HomeScreen renders with live anime sections', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.darkTheme,
-          home: const HomeScreen(),
+        ProviderScope(
+          overrides: [
+            homeDataProvider.overrideWith((ref) => Future.value(sampleHomeData)),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.darkTheme,
+            home: const HomeScreen(),
+          ),
         ),
       );
 
-      expect(find.text('FOUNDATION READY'), findsOneWidget);
+      await tester.pump();
+      await tester.pumpAndSettle();
+
       expect(find.text('Trending Now'), findsOneWidget);
       expect(find.text('Airing Today'), findsOneWidget);
+      expect(find.text('Search anime titles, genres, studios...'), findsOneWidget);
     });
 
     testWidgets('ExploreScreen renders search and filter chips', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.darkTheme,
-          home: const ExploreScreen(),
+        const ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.darkTheme,
+            home: ExploreScreen(),
+          ),
         ),
       );
 
+      await tester.pump();
+
       expect(find.text('Explore'), findsOneWidget);
       expect(find.text('All Genres'), findsOneWidget);
-      expect(find.text('Explore Anime Catalog'), findsOneWidget);
     });
 
     testWidgets('ScheduleScreen renders weekday tabs', (tester) async {
