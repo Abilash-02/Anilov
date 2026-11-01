@@ -78,17 +78,10 @@ void main() {
     );
 
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
-    await tester.pumpAndSettle();
-
-    final exc = tester.takeException();
-    if (exc != null) {
-      // ignore: avoid_print
-      print('CAUGHT UNHANDLED EXCEPTION: $exc');
-    }
-    final texts = find.byType(Text).evaluate().map((e) => (e.widget as Text).data).toList();
-    // ignore: avoid_print
-    print('ALL TEXTS IN TREE: $texts');
+    await tester.pump(const Duration(milliseconds: 200));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+    await tester.pump();
 
     expect(find.text('Unable to load anime catalog'), findsOneWidget);
     expect(find.textContaining('Network timeout error'), findsOneWidget);
