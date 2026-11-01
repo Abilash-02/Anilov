@@ -521,12 +521,15 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
                           children: [
                             const Icon(Icons.shield_outlined, size: 14, color: AppTheme.violetLight),
                             const SizedBox(width: 6),
-                            Text(
-                              'Verify External Link Policy (share.google evaluation)',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: isDark ? AppTheme.violetLight : AppTheme.violetDark,
+                            Flexible(
+                              child: Text(
+                                'Verify External Link Policy (share.google evaluation)',
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? AppTheme.violetLight : AppTheme.violetDark,
+                                ),
                               ),
                             ),
                           ],

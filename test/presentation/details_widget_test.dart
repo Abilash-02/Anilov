@@ -51,9 +51,9 @@ void main() {
     expect(find.text('TV Series'), findsOneWidget);
     expect(find.text('WIT Studio'), findsOneWidget);
 
-    // Quick stats
-    expect(find.text('Episodes'), findsOneWidget);
-    expect(find.text('25'), findsOneWidget);
+    // Quick stats and episode section
+    expect(find.text('Episodes'), findsWidgets);
+    expect(find.text('25'), findsWidgets);
 
     // Synopsis
     expect(find.text('Synopsis'), findsOneWidget);
