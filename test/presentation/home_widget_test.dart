@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:anilov/core/theme/app_theme.dart';
 import 'package:anilov/features/anime/domain/models/anime_media.dart';
 import 'package:anilov/features/anime/presentation/providers/anime_providers.dart';
@@ -9,6 +10,11 @@ import 'package:anilov/features/watchlist/presentation/providers/watchlist_provi
 import '../fixtures/anime_fixtures.dart';
 
 void main() {
+  setUpAll(() {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
+
   final sampleAnime = AnimeMedia.fromJson(sampleAnimeJson);
 
   testWidgets('HomeScreen renders search entry point, genre chips, and anime sections', (tester) async {
@@ -24,6 +30,7 @@ void main() {
         overrides: [
           animeRepositoryProvider.overrideWithValue(fakeRepo),
           watchlistRepositoryProvider.overrideWithValue(FakeWatchlistRepository()),
+          historyRepositoryProvider.overrideWithValue(FakeHistoryRepository()),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
@@ -72,6 +79,7 @@ void main() {
             throw Exception('Network timeout error');
           }),
           watchlistRepositoryProvider.overrideWithValue(FakeWatchlistRepository()),
+          historyRepositoryProvider.overrideWithValue(FakeHistoryRepository()),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,

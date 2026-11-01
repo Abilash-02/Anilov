@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:anilov/core/theme/app_theme.dart';
 import 'package:anilov/features/watchlist/domain/models/watch_status.dart';
 import 'package:anilov/features/watchlist/domain/models/watchlist_item.dart';
@@ -11,6 +12,11 @@ import 'package:anilov/features/watchlist/presentation/watchlist_screen.dart';
 import '../fixtures/anime_fixtures.dart';
 
 void main() {
+  setUpAll(() {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
+
   final now = DateTime.now();
   final sampleItem = WatchlistItem(
     animeId: 16498,
@@ -27,11 +33,13 @@ void main() {
 
   testWidgets('WatchlistScreen renders empty state when no anime in watchlist', (tester) async {
     final fakeRepo = FakeWatchlistRepository();
+    final fakeHistory = FakeHistoryRepository();
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           watchlistRepositoryProvider.overrideWithValue(fakeRepo),
+          historyRepositoryProvider.overrideWithValue(fakeHistory),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
@@ -50,11 +58,13 @@ void main() {
 
   testWidgets('WatchlistScreen renders watchlist items with progress and status badge', (tester) async {
     final fakeRepo = FakeWatchlistRepository([sampleItem]);
+    final fakeHistory = FakeHistoryRepository();
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           watchlistRepositoryProvider.overrideWithValue(fakeRepo),
+          historyRepositoryProvider.overrideWithValue(fakeHistory),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
@@ -83,11 +93,13 @@ void main() {
 
   testWidgets('WatchlistScreen removes item with confirmation dialog', (tester) async {
     final fakeRepo = FakeWatchlistRepository([sampleItem]);
+    final fakeHistory = FakeHistoryRepository();
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           watchlistRepositoryProvider.overrideWithValue(fakeRepo),
+          historyRepositoryProvider.overrideWithValue(fakeHistory),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,

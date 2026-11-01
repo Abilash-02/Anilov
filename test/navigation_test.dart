@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:anilov/core/theme/app_theme.dart';
 import 'package:anilov/features/anime/domain/models/anime_media.dart';
 import 'package:anilov/features/anime/presentation/providers/anime_providers.dart';
@@ -14,6 +15,11 @@ import 'package:anilov/features/watchlist/presentation/watchlist_screen.dart';
 import 'fixtures/anime_fixtures.dart';
 
 void main() {
+  setUpAll(() {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
+
   setUp(() {
     SharedPreferences.setMockInitialValues({});
   });
@@ -34,6 +40,7 @@ void main() {
           overrides: [
             animeRepositoryProvider.overrideWithValue(fakeRepo),
             watchlistRepositoryProvider.overrideWithValue(FakeWatchlistRepository()),
+            historyRepositoryProvider.overrideWithValue(FakeHistoryRepository()),
           ],
           child: MaterialApp(
             theme: AppTheme.darkTheme,
@@ -91,6 +98,7 @@ void main() {
         ProviderScope(
           overrides: [
             watchlistRepositoryProvider.overrideWithValue(fakeWatchlist),
+            historyRepositoryProvider.overrideWithValue(FakeHistoryRepository()),
           ],
           child: MaterialApp(
             theme: AppTheme.darkTheme,
