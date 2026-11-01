@@ -7,7 +7,18 @@ import 'package:anilov/features/schedule/domain/models/airing_schedule.dart';
 import 'package:anilov/features/watchlist/presentation/providers/watchlist_providers.dart';
 
 // Controls whether only watchlist anime are displayed in the schedule
-final scheduleWatchlistOnlyProvider = StateProvider<bool>((ref) => false);
+class ScheduleWatchlistFilterNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void toggle() => state = !state;
+  void setFilter(bool val) => state = val;
+}
+
+final scheduleWatchlistOnlyProvider =
+    NotifierProvider<ScheduleWatchlistFilterNotifier, bool>(
+  ScheduleWatchlistFilterNotifier.new,
+);
 
 // Loads the full airing schedule for the current 7-day week
 final weeklyScheduleProvider =

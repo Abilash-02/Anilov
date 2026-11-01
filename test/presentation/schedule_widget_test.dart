@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:anilov/core/theme/app_theme.dart';
 import 'package:anilov/features/anime/presentation/providers/anime_providers.dart';
 import 'package:anilov/features/schedule/domain/models/airing_schedule.dart';
@@ -13,6 +14,11 @@ import 'package:anilov/features/watchlist/presentation/providers/watchlist_provi
 import '../fixtures/anime_fixtures.dart';
 
 void main() {
+  setUpAll(() {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
+
   final sampleSchedule = AiringSchedule.fromJson(sampleAiringScheduleJson);
 
   testWidgets('ScheduleScreen renders weekday tabs, disclaimer notice, and schedule cards',
@@ -33,6 +39,7 @@ void main() {
         overrides: [
           animeRepositoryProvider.overrideWithValue(fakeAnime),
           watchlistRepositoryProvider.overrideWithValue(fakeWatchlist),
+          historyRepositoryProvider.overrideWithValue(FakeHistoryRepository()),
           // Override weeklyScheduleProvider to return sample schedule directly
           weeklyScheduleProvider.overrideWith((ref) async => [sampleSchedule]),
         ],

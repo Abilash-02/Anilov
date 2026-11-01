@@ -383,11 +383,13 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
                       const SizedBox(height: 8),
                       InkWell(
                         onTap: () {
-                          TrailerPlayerDialog.show(
-                            context,
-                            videoId: anime.trailer!.id,
-                            title: anime.title.displayTitle,
-                          );
+                          if (anime.trailer?.id != null && anime.trailer!.id!.isNotEmpty) {
+                            TrailerPlayerDialog.show(
+                              context,
+                              videoId: anime.trailer!.id!,
+                              title: anime.title.displayTitle,
+                            );
+                          }
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: Container(

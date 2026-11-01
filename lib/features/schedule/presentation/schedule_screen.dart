@@ -70,7 +70,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen>
               label: const Text('Watchlist', style: TextStyle(fontSize: 12)),
               selected: watchlistOnly,
               onSelected: (val) {
-                ref.read(scheduleWatchlistOnlyProvider.notifier).state = val;
+                ref.read(scheduleWatchlistOnlyProvider.notifier).setFilter(val);
               },
               selectedColor: AppTheme.violet.withValues(alpha: 0.25),
               checkmarkColor: AppTheme.violetLight,

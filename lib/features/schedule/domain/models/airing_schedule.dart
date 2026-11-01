@@ -36,14 +36,26 @@ class AiringSchedule {
     final diff = airingAtLocal.difference(DateTime.now());
     if (diff.isNegative) {
       final past = -diff;
-      if (past.inDays > 0) return 'Aired ${past.inDays}d ago';
-      if (past.inHours > 0) return 'Aired ${past.inHours}h ago';
-      if (past.inMinutes > 0) return 'Aired ${past.inMinutes}m ago';
+      if (past.inDays > 0) {
+        return 'Aired ${past.inDays}d ago';
+      }
+      if (past.inHours > 0) {
+        return 'Aired ${past.inHours}h ago';
+      }
+      if (past.inMinutes > 0) {
+        return 'Aired ${past.inMinutes}m ago';
+      }
       return 'Aired just now';
     } else {
-      if (diff.inDays > 0) return 'Airs in ${diff.inDays}d ${diff.inHours % 24}h';
-      if (diff.inHours > 0) return 'Airs in ${diff.inHours}h ${diff.inMinutes % 60}m';
-      if (diff.inMinutes > 0) return 'Airs in ${diff.inMinutes}m';
+      if (diff.inDays > 0) {
+        return 'Airs in ${diff.inDays}d ${diff.inHours % 24}h';
+      }
+      if (diff.inHours > 0) {
+        return 'Airs in ${diff.inHours}h ${diff.inMinutes % 60}m';
+      }
+      if (diff.inMinutes > 0) {
+        return 'Airs in ${diff.inMinutes}m';
+      }
       return 'Airing soon';
     }
   }

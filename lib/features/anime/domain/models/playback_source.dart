@@ -21,8 +21,8 @@ class OfficialTrailerSource extends PlaybackSource {
   const OfficialTrailerSource({
     required this.youtubeVideoId,
     this.thumbnailUrl,
-    String title = 'Official YouTube Trailer',
-  }) : super(type: PlaybackSourceType.officialTrailer, title: title);
+    super.title = 'Official YouTube Trailer',
+  }) : super(type: PlaybackSourceType.officialTrailer);
 }
 
 class WhereToWatchSource extends PlaybackSource {
