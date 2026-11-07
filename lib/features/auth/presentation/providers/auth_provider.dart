@@ -4,7 +4,6 @@ import 'package:anilov/features/anime/data/anilist_client.dart';
 import 'package:anilov/features/auth/data/anilist_oauth_service.dart';
 import 'package:anilov/features/auth/data/auth_repository.dart';
 import 'package:anilov/features/auth/data/auth_storage.dart';
-import 'package:anilov/features/auth/domain/models/anilist_user.dart';
 import 'package:anilov/features/auth/domain/models/auth_state.dart';
 
 final authStorageProvider = Provider<AuthStorage>((ref) {

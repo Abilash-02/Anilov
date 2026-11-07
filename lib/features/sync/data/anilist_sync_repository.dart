@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import 'package:anilov/features/anime/data/anilist_client.dart';

@@ -605,7 +605,7 @@ class _ReactiveAniListSettingsCard extends ConsumerWidget {
                     color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
                   ),
                   const SizedBox(width: 6),
-                  Text(
+                  const Text(
                     'Configure AniList Client ID & OAuth Settings',
                     style: TextStyle(
                       fontSize: 12,

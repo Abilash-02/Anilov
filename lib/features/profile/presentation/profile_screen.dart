@@ -115,7 +115,7 @@ class _ReactiveProfileScreen extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: 13,
                               color: authState.isAuthenticated
-                                  ? AppTheme.accentCyan
+                                  ? AppTheme.violetLight
                                   : (isDark
                                       ? AppTheme.darkOnSurfaceMuted
                                       : AppTheme.lightOnSurfaceMuted),

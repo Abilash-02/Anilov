@@ -81,7 +81,7 @@ class _LocalPlayerScreenState extends State<LocalPlayerScreen> {
         type: FileType.video,
       );
 
-      if (files.isNotEmpty) {
+      if (files != null && files.isNotEmpty) {
         final path = files.first.path;
         if (path != null) {
           await _loadVideo(path, files.first.name);
