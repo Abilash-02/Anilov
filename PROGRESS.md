@@ -1,6 +1,6 @@
 # Anilov Project Progress
 
-## Current State: RUN 5 (Daily Updates & Polish) — Implemented
+## Current State: RUN 6 (AniList OAuth Sync) — Implemented
 
 | Run | Title | Status | CI Status |
 |---|---|---|---|
@@ -9,7 +9,7 @@
 | **RUN 3** | Persistence & Watchlist | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41321261934`) |
 | **RUN 4** | Schedule & Sources | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41332993906`) |
 | **RUN 5** | Daily Updates & Polish | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42366059244`) |
-| **RUN 6** | Optional: AniList OAuth Sync | Not yet implemented | - |
+| **RUN 6** | AniList OAuth Sync | Completed | Verifying in CI |
 
 ---
 
@@ -193,3 +193,42 @@
   - Run ID: `42366059244` (Passed in 7m 28s).
   - All 86/86 tests passed, `flutter analyze` passed with 0 issues.
   - Debug APK built and verified: `anilov-debug-apk`.
+
+---
+
+## RUN 6 Deliverables (AniList OAuth Sync)
+- [x] **Dependencies Added**:
+  - `flutter_secure_storage` (`>=9.0.0 <10.0.0`): Encrypted token and credential storage using Android KeyStore / EncryptedSharedPreferences.
+  - `app_links` (`>=6.0.0 <7.0.0`): Unified deep linking stream for OAuth custom-scheme redirects (`anilov://auth`).
+- [x] **AniList OAuth Authentication Flow**:
+  - `AniListOAuthService` (`lib/features/auth/data/anilist_oauth_service.dart`): Official AniList OAuth 2.0 Implicit Grant implementation with custom redirect scheme `anilov://auth`.
+  - Secure credential model: zero client secrets embedded or exposed in APK. Client ID configurable via compile-time `--dart-define=ANILIST_CLIENT_ID=...` or runtime user input.
+  - Token extraction parsing both URI fragments (`#access_token=...`) and query parameters, handling user cancellation and error descriptions.
+  - AndroidManifest intent-filter auto-configured via `tools/patch_android.py`.
+- [x] **Secure Auth Storage & Profile Integration**:
+  - `AuthStorage` abstraction with `SecureAuthStorage` for production and `InMemoryAuthStorage` for headless tests.
+  - `AniListUser` & `AuthState` models managing user ID, username, avatar URL, authentication status, and error states.
+  - `AuthNotifier` (`lib/features/auth/presentation/providers/auth_provider.dart`): Riverpod state notifier handling OAuth initiation, token login, background profile validation, token revocation, and logout.
+  - Full offline degradation: preserves cached auth state and local watchlist when network is unavailable.
+- [x] **Bidirectional Watchlist & Progress Synchronization**:
+  - `AniListSyncRepository` (`lib/features/sync/data/anilist_sync_repository.dart`): GraphQL queries for `MediaListCollection` and `SaveMediaListEntry` mutations.
+  - Full status mapping: `CURRENT` (Watching), `PLANNING` (Planning), `COMPLETED` (Completed), `PAUSED` (On Hold), `DROPPED` (Dropped).
+  - Conflict resolution algorithm:
+    - Never overwrites higher watched progress with lower progress (preserves offline watching).
+    - Pushes local offline progress to AniList; pulls remote progress if newer.
+    - Resolves status and score conflicts using timestamp comparisons.
+    - Pushes local-only watchlist items to AniList.
+  - `SyncNotifier` (`lib/features/sync/presentation/providers/sync_provider.dart`): Coordinates manual and automated sync with `SharedPreferences` persistence for last sync timestamp.
+- [x] **UI & Screen Integration**:
+  - `ProfileScreen` (`lib/features/profile/presentation/profile_screen.dart`): Dynamic header showing AniList avatar, username, connection badge, quick "Sync Now" action with loading spinner, and Disconnect option.
+  - `SettingsScreen` (`lib/features/profile/presentation/settings_screen.dart`): Dedicated "AniList Account & Cloud Sync" card, Client ID configuration action, and OAuth security documentation.
+  - `ConnectAniListDialog` (`lib/features/auth/presentation/widgets/connect_anilist_dialog.dart`): Modal for browser OAuth login with developer direct token entry fallback.
+- [x] **Release Signing Documentation**:
+  - `docs/RELEASE_SIGNING.md`: Complete security guide for Android release signing, keystore generation, `key.properties`, ProGuard/R8, and Gradle signing configs.
+- [x] **Automated Test Suite**:
+  - `test/auth/auth_storage_test.dart` (4 tests): Token, user profile, custom client ID storage, and clearing.
+  - `test/auth/oauth_test.dart` (6 tests): Auth URL generation, fragment token extraction, query token extraction, error handling, and null fallback.
+  - `test/sync/anilist_sync_test.dart` (3 tests): Remote entry pulling, offline progress preservation and mutation pushing, and local-only entry sync.
+  - `test/presentation/auth_widget_test.dart` (4 tests): ProfileScreen authenticated/disconnected states, SettingsScreen AniList section, and ConnectAniListDialog mode toggle.
+  - `test/presentation/about_widget_test.dart`: Updated to verify RUN 6 version attribution.
+  - All 86 existing tests preserved and passing (total 103 tests).

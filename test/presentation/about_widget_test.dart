@@ -17,7 +17,7 @@ void main() {
     // Header & Version
     expect(find.text('About & Attribution'), findsOneWidget);
     expect(
-      find.text('Version 1.0.0 (RUN 5 — Daily Updates & Polish)'),
+      find.text('Version 1.0.0 (RUN 6 — AniList OAuth Sync)'),
       findsOneWidget,
     );
 

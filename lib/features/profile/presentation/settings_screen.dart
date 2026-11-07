@@ -3,9 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../auth/presentation/providers/auth_provider.dart';
+import '../../auth/presentation/widgets/connect_anilist_dialog.dart';
 import '../../notifications/notification_service.dart';
 import '../../notifications/workmanager_service.dart';
 import '../../settings/presentation/providers/settings_provider.dart';
+import '../../sync/domain/models/sync_state.dart';
+import '../../sync/presentation/providers/sync_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -371,6 +375,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 20),
 
+            // Section: AniList Account & Cloud Sync
+            Text(
+              'AniList Account & Cloud Sync',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: isDark
+                    ? AppTheme.darkOnSurfaceMuted
+                    : AppTheme.lightOnSurfaceMuted,
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            const _AniListSettingsCard(),
+            const SizedBox(height: 20),
+
             // Section 4: Storage & Maintenance
             Text(
               'Storage & Cache',
@@ -409,6 +428,276 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _AniListSettingsCard extends StatelessWidget {
+  const _AniListSettingsCard();
+
+  bool _hasProviderScope(BuildContext context) {
+    try {
+      ProviderScope.containerOf(context, listen: false);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasProviderScope(context)) {
+      return const _ReactiveAniListSettingsCard();
+    }
+    return const _StaticAniListSettingsCard();
+  }
+}
+
+class _ReactiveAniListSettingsCard extends ConsumerWidget {
+  const _ReactiveAniListSettingsCard();
+
+  String _formatLastSync(DateTime? time) {
+    if (time == null) return 'Never';
+    final diff = DateTime.now().difference(time);
+    if (diff.inSeconds < 60) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${time.month}/${time.day}';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authNotifierProvider);
+    final syncState = ref.watch(syncNotifierProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkSurface : AppTheme.lightSurfaceVariant,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? const Color(0xFF2E2E38) : const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: authState.isAuthenticated
+                      ? Colors.teal.withValues(alpha: 0.15)
+                      : AppTheme.violet.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  authState.isAuthenticated
+                      ? Icons.check_circle_rounded
+                      : Icons.cloud_off_rounded,
+                  color: authState.isAuthenticated ? Colors.tealAccent : AppTheme.violetLight,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      authState.isAuthenticated
+                          ? 'Connected as ${authState.user?.name ?? 'User'}'
+                          : 'Not connected to AniList',
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      authState.isAuthenticated
+                          ? 'Last sync: ${_formatLastSync(syncState.lastSyncTime)}'
+                          : 'Sign in to sync watchlist and progress',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          if (authState.isAuthenticated) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: syncState.isSyncing
+                        ? null
+                        : () async {
+                            await ref.read(syncNotifierProvider.notifier).syncNow();
+                            if (context.mounted) {
+                              final res = ref.read(syncNotifierProvider);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(res.message ?? 'Sync complete.'),
+                                  backgroundColor: res.status == SyncStatus.error
+                                      ? Colors.redAccent
+                                      : AppTheme.violet,
+                                ),
+                              );
+                            }
+                          },
+                    icon: syncState.isSyncing
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Icon(Icons.sync_rounded, size: 18),
+                    label: Text(syncState.isSyncing ? 'Syncing...' : 'Sync Now'),
+                    style: FilledButton.styleFrom(backgroundColor: AppTheme.violet),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton(
+                  onPressed: () async {
+                    await ref.read(authNotifierProvider.notifier).logout();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Disconnected from AniList.')),
+                      );
+                    }
+                  },
+                  style: OutlinedButton.styleFrom(foregroundColor: Colors.redAccent),
+                  child: const Text('Disconnect'),
+                ),
+              ],
+            ),
+          ] else ...[
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () => ConnectAniListDialog.show(context),
+                icon: const Icon(Icons.login_rounded, size: 18),
+                label: const Text('Connect AniList Account'),
+                style: FilledButton.styleFrom(backgroundColor: AppTheme.violet),
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+
+          // Configure Client ID action
+          InkWell(
+            onTap: () => ConnectAniListDialog.show(context),
+            borderRadius: BorderRadius.circular(6),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.settings_outlined,
+                    size: 16,
+                    color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Configure AniList Client ID & OAuth Settings',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.violetLight,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Security disclaimer
+          Text(
+            'AniList OAuth uses the official token authorization flow (anilov://auth). No passwords or private secrets are ever stored in the app.',
+            style: TextStyle(
+              fontSize: 11,
+              color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StaticAniListSettingsCard extends StatelessWidget {
+  const _StaticAniListSettingsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkSurface : AppTheme.lightSurfaceVariant,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? const Color(0xFF2E2E38) : const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppTheme.violet.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.cloud_off_rounded,
+                  color: AppTheme.violetLight,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Not connected to AniList',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Sign in to sync watchlist and progress',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'AniList OAuth uses the official token authorization flow (anilov://auth). No passwords or private secrets are ever stored in the app.',
+            style: TextStyle(
+              fontSize: 11,
+              color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
+            ),
+          ),
+        ],
       ),
     );
   }

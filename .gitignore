@@ -50,3 +50,4 @@ venv/
 *.key
 *.keystore
 *.jks
+**/key.properties

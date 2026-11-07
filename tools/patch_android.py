@@ -89,6 +89,21 @@ def patch_manifest():
         new_app_tag = f"<application{new_attrs}>"
         content = content.replace(app_tag_full, new_app_tag, 1)
 
+    # 4. Ensure OAuth deep link intent-filter exists in MainActivity
+    if 'android:scheme="anilov"' not in content:
+        activity_match = re.search(r'(<activity\b[^>]*>)', content)
+        if activity_match:
+            oauth_intent_filter = """
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="anilov" android:host="auth" />
+            </intent-filter>"""
+            idx = activity_match.end()
+            content = content[:idx] + oauth_intent_filter + content[idx:]
+            print("Added OAuth intent-filter (anilov://auth) to MainActivity")
+
     if content != original:
         MANIFEST_PATH.write_text(content, encoding="utf-8")
         print(f"Successfully patched {MANIFEST_PATH}")

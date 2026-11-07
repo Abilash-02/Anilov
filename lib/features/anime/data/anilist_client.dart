@@ -22,6 +22,14 @@ class NetworkException implements Exception {
   String toString() => message;
 }
 
+class UnauthorizedException implements Exception {
+  final String message;
+  const UnauthorizedException([this.message = 'AniList session expired or unauthorized. Please re-login.']);
+
+  @override
+  String toString() => message;
+}
+
 class ApiException implements Exception {
   final String message;
   final int? statusCode;
@@ -73,12 +81,15 @@ class AniListClient {
   Future<Map<String, dynamic>> postQuery(
     String query, {
     Map<String, dynamic>? variables,
+    String? authToken,
     Duration ttl = defaultTtl,
     bool forceRefresh = false,
   }) async {
+    final isCacheable = (authToken == null || authToken.isEmpty) &&
+        !query.trim().startsWith('mutation');
     final cacheKey = '$query::${jsonEncode(variables ?? {})}';
 
-    if (!forceRefresh && _cache.containsKey(cacheKey)) {
+    if (!forceRefresh && isCacheable && _cache.containsKey(cacheKey)) {
       final entry = _cache[cacheKey]!;
       if (!entry.isExpired(ttl)) {
         return entry.data as Map<String, dynamic>;
@@ -88,12 +99,18 @@ class AniListClient {
     }
 
     try {
+      final options = Options();
+      if (authToken != null && authToken.isNotEmpty) {
+        options.headers = {'Authorization': 'Bearer $authToken'};
+      }
+
       final response = await _dio.post(
         '',
         data: {
           'query': query,
           'variables': variables,
         },
+        options: options,
       );
 
       final data = response.data;
@@ -103,17 +120,27 @@ class AniListClient {
           if (errors.isNotEmpty) {
             final first = errors.first;
             final msg = first is Map ? (first['message'] ?? 'GraphQL error') : 'GraphQL error';
+            final status = first is Map ? first['status'] : null;
+            if (status == 401 || msg.toString().toLowerCase().contains('unauthorized')) {
+              throw const UnauthorizedException();
+            }
             throw ApiException(msg.toString());
           }
         }
 
         final resultData = data['data'] as Map<String, dynamic>? ?? {};
-        _cache[cacheKey] = _CacheEntry(resultData);
+        if (isCacheable) {
+          _cache[cacheKey] = _CacheEntry(resultData);
+        }
         return resultData;
       }
 
       throw const ApiException('Invalid response received from AniList.');
     } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        throw const UnauthorizedException();
+      }
+
       if (e.response?.statusCode == 429) {
         final retryHeader = e.response?.headers.value('retry-after');
         int seconds = 60;

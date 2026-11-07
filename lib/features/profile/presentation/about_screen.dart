@@ -33,7 +33,7 @@ class AboutScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Center(
               child: Text(
-                'Version 1.0.0 (RUN 5 — Daily Updates & Polish)',
+                'Version 1.0.0 (RUN 6 — AniList OAuth Sync)',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -184,7 +184,7 @@ class AboutScreen extends StatelessWidget {
               child: Text(
                 'Built with Flutter, Material 3, flutter_riverpod, go_router, sqflite, dio, '
                 'cached_network_image, chewie, video_player, flutter_local_notifications, '
-                'workmanager, and file_picker.',
+                'workmanager, file_picker, flutter_secure_storage, and app_links.',
                 style: TextStyle(
                   fontSize: 13,
                   height: 1.5,
