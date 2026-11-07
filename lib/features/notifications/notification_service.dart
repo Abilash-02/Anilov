@@ -26,7 +26,7 @@ class NotificationService {
       const initSettings = InitializationSettings(android: androidSettings);
 
       await _plugin.initialize(
-        initSettings,
+        settings: initSettings,
         onDidReceiveNotificationResponse: (NotificationResponse response) {
           debugPrint('Notification clicked with payload: ${response.payload}');
         },
@@ -72,10 +72,10 @@ class NotificationService {
       const notificationDetails = NotificationDetails(android: androidDetails);
 
       await _plugin.show(
-        id,
-        title,
-        body,
-        notificationDetails,
+        id: id,
+        title: title,
+        body: body,
+        notificationDetails: notificationDetails,
         payload: payload,
       );
     } catch (e) {
@@ -86,7 +86,7 @@ class NotificationService {
   /// Cancel a specific notification
   Future<void> cancel(int id) async {
     try {
-      await _plugin.cancel(id);
+      await _plugin.cancel(id: id);
     } catch (e) {
       debugPrint('Failed to cancel notification $id: $e');
     }

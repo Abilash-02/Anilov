@@ -18,10 +18,10 @@ void anilovCallbackDispatcher() {
           payload: '/schedule',
         );
       }
-      return Future.value(true);
+      return true;
     } catch (e) {
       debugPrint('Background workmanager task failed: $e');
-      return Future.value(false);
+      return false;
     }
   });
 }
@@ -43,7 +43,6 @@ class WorkmanagerService {
     try {
       await Workmanager().initialize(
         anilovCallbackDispatcher,
-        isInDebugMode: false,
       );
       _initialized = true;
     } catch (e) {
@@ -71,7 +70,7 @@ class WorkmanagerService {
         constraints: Constraints(
           networkType: NetworkType.connected,
         ),
-        existingWorkPolicy: ExistingWorkPolicy.replace,
+        existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
       );
       debugPrint(
         'Scheduled daily check at $hour:$minute (delay: ${initialDelay.inMinutes} mins)',

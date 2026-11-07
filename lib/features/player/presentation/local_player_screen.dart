@@ -77,15 +77,14 @@ class _LocalPlayerScreenState extends State<LocalPlayerScreen> {
     });
 
     try {
-      final result = await FilePicker.platform.pickFiles(
+      final files = await FilePicker.pickFiles(
         type: FileType.video,
-        allowMultiple: false,
       );
 
-      if (result != null && result.files.isNotEmpty) {
-        final path = result.files.single.path;
+      if (files.isNotEmpty) {
+        final path = files.first.path;
         if (path != null) {
-          await _loadVideo(path, result.files.single.name);
+          await _loadVideo(path, files.first.name);
         }
       }
     } catch (e) {
@@ -119,6 +118,8 @@ class _LocalPlayerScreenState extends State<LocalPlayerScreen> {
       if (savedSecs > 0 && savedSecs < controller.value.duration.inSeconds) {
         await controller.seekTo(Duration(seconds: savedSecs));
       }
+
+      if (!mounted) return;
 
       final isDark = Theme.of(context).brightness == Brightness.dark;
       final chewie = ChewieController(
