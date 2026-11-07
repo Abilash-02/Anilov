@@ -77,14 +77,15 @@ class _LocalPlayerScreenState extends State<LocalPlayerScreen> {
     });
 
     try {
-      final files = await FilePicker.pickFiles(
+      final result = await FilePicker.platform.pickFiles(
         type: FileType.video,
+        allowMultiple: false,
       );
 
-      if (files != null && files.isNotEmpty) {
-        final path = files.first.path;
+      if (result != null && result.files.isNotEmpty) {
+        final path = result.files.single.path;
         if (path != null) {
-          await _loadVideo(path, files.first.name);
+          await _loadVideo(path, result.files.single.name);
         }
       }
     } catch (e) {
