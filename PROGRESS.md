@@ -9,7 +9,7 @@
 | **RUN 3** | Persistence & Watchlist | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41321261934`) |
 | **RUN 4** | Schedule & Sources | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41332993906`) |
 | **RUN 5** | Daily Updates & Polish | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42366059244`) |
-| **RUN 6** | AniList OAuth Sync | Completed | Verifying in CI |
+| **RUN 6** | AniList OAuth Sync | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42375711708`) |
 
 ---
 
@@ -231,4 +231,8 @@
   - `test/sync/anilist_sync_test.dart` (3 tests): Remote entry pulling, offline progress preservation and mutation pushing, and local-only entry sync.
   - `test/presentation/auth_widget_test.dart` (4 tests): ProfileScreen authenticated/disconnected states, SettingsScreen AniList section, and ConnectAniListDialog mode toggle.
   - `test/presentation/about_widget_test.dart`: Updated to verify RUN 6 version attribution.
-  - All 86 existing tests preserved and passing (total 103 tests).
+  - All 86 existing tests preserved and passing (total 103/103 tests).
+- [x] **CI Verification & Artifacts**:
+  - Run ID: `42375711708` (Passed in 7m 29s).
+  - All 103/103 tests passed, `flutter analyze` passed with 0 issues.
+  - Debug APK built and verified: `anilov-debug-apk`.
