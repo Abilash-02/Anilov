@@ -12,6 +12,7 @@ void main() {
         home: const AboutScreen(),
       ),
     );
+    await tester.pumpAndSettle();
 
     // Header & Version
     expect(find.text('About & Attribution'), findsOneWidget);

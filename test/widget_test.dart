@@ -83,6 +83,7 @@ void main() {
           home: const AboutScreen(),
         ),
       );
+      await tester.pumpAndSettle();
 
       expect(find.text('About & Attribution'), findsOneWidget);
       expect(find.text('AniList GraphQL API'), findsOneWidget);
@@ -99,6 +100,7 @@ void main() {
           home: const SettingsScreen(),
         ),
       );
+      await tester.pumpAndSettle();
 
       expect(find.text('Adult Content Filter'), findsOneWidget);
       expect(find.byType(SwitchListTile), findsNWidgets(2));

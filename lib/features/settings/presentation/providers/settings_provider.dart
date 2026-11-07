@@ -13,6 +13,8 @@ class SettingsNotifier extends Notifier<AppSettings> {
   static const String _keyReminderMinute = 'settings_reminder_minute';
   static const String _keyShowReminders = 'settings_show_reminders';
 
+  bool _isCustomized = false;
+
   @override
   AppSettings build() {
     // Initial default state; loads stored preferences asynchronously
@@ -23,6 +25,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
   Future<void> _loadPreferences() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      if (_isCustomized) return;
 
       final themeStr = prefs.getString(_keyThemeMode);
       ThemeMode mode = ThemeMode.system;
@@ -61,6 +64,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
+    _isCustomized = true;
     state = state.copyWith(themeMode: mode);
     final prefs = await SharedPreferences.getInstance();
     final str = switch (mode) {
@@ -72,12 +76,14 @@ class SettingsNotifier extends Notifier<AppSettings> {
   }
 
   Future<void> setAdultContent(bool enabled) async {
+    _isCustomized = true;
     state = state.copyWith(adultContent: enabled);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyAdultContent, enabled);
   }
 
   Future<void> setDailyNotifications(bool enabled) async {
+    _isCustomized = true;
     state = state.copyWith(dailyNotificationsEnabled: enabled);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyDailyNotifs, enabled);
@@ -93,6 +99,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
   }
 
   Future<void> setReminderTime(int hour, int minute) async {
+    _isCustomized = true;
     state = state.copyWith(reminderHour: hour, reminderMinute: minute);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_keyReminderHour, hour);
@@ -107,6 +114,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
   }
 
   Future<void> toggleShowReminder(int animeId) async {
+    _isCustomized = true;
     final current = Set<int>.from(state.showReminders);
     if (current.contains(animeId)) {
       current.remove(animeId);

@@ -22,6 +22,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     // App Bar
     expect(find.text('Settings'), findsOneWidget);
