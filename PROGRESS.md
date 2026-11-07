@@ -10,7 +10,7 @@
 | **RUN 4** | Schedule & Sources | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41332993906`) |
 | **RUN 5** | Daily Updates & Polish | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42366059244`) |
 | **RUN 6** | AniList OAuth Sync | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42375711708`) |
-| **POST-RUN 6** | Local Player Bug Fix & Custom Video URL | Completed | Pending CI Verification |
+| **POST-RUN 6** | Local Player Bug Fix & Custom Video URL | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42379876391`) |
 
 ---
 
@@ -259,5 +259,9 @@
 - [x] **Automated Regression & Unit Tests**:
   - `test/player/video_source_evaluator_test.dart` (7 tests): URL validation, Google Share link detection, Drive/YouTube detection, direct video stream detection, and content type probing.
   - `test/presentation/player_widget_test.dart` (6 tests): Empty state, prompt dialog with preset, Google Share test chip with External Webpage dialog, safe controller disposal, regression test navigating to `/player` from `AnimeDetailsScreen` without GlobalKey assertion, and regression test navigating from `ProfileScreen`.
-  - Preserved all 103 existing tests.
+  - Preserved all 103 existing tests (total 116/116 tests passing).
+- [x] **CI Verification & Artifacts**:
+  - Run ID: `42379876391` (Passed in 7m 59s).
+  - All 116/116 tests passed, `flutter analyze` passed with 0 issues.
+  - Debug APK built and verified: `anilov-debug-apk`.
 
