@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../core/theme/app_theme.dart';
-import '../../auth/presentation/providers/auth_provider.dart';
-import '../../auth/presentation/widgets/connect_anilist_dialog.dart';
-import '../../notifications/notification_service.dart';
-import '../../notifications/workmanager_service.dart';
-import '../../settings/presentation/providers/settings_provider.dart';
-import '../../sync/domain/models/sync_state.dart';
-import '../../sync/presentation/providers/sync_provider.dart';
+import 'package:anilov/core/theme/app_theme.dart';
+import 'package:anilov/features/auth/presentation/providers/auth_provider.dart';
+import 'package:anilov/features/auth/presentation/widgets/connect_anilist_dialog.dart';
+import 'package:anilov/features/notifications/notification_service.dart';
+import 'package:anilov/features/notifications/workmanager_service.dart';
+import 'package:anilov/features/settings/presentation/providers/settings_provider.dart';
+import 'package:anilov/features/sync/domain/models/sync_state.dart';
+import 'package:anilov/features/sync/presentation/providers/sync_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

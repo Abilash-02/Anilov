@@ -1,5 +1,5 @@
-import '../../anime/data/anilist_client.dart';
-import '../domain/models/anilist_user.dart';
+import 'package:anilov/features/anime/data/anilist_client.dart';
+import 'package:anilov/features/auth/domain/models/anilist_user.dart';
 
 abstract class AuthRepository {
   Future<AniListUser> fetchViewer(String accessToken);

@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../anime/data/anilist_client.dart';
-import '../../auth/presentation/providers/auth_provider.dart';
-import '../../watchlist/presentation/providers/watchlist_providers.dart';
-import '../data/anilist_sync_repository.dart';
-import '../domain/models/sync_state.dart';
+import 'package:anilov/features/anime/data/anilist_client.dart';
+import 'package:anilov/features/auth/presentation/providers/auth_provider.dart';
+import 'package:anilov/features/sync/data/anilist_sync_repository.dart';
+import 'package:anilov/features/sync/domain/models/sync_state.dart';
+import 'package:anilov/features/watchlist/presentation/providers/watchlist_providers.dart';
 
 final syncRepositoryProvider = Provider<SyncRepository>((ref) {
   final client = AniListClient();

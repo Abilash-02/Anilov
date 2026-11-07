@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/app_theme.dart';
-import '../../auth/presentation/providers/auth_provider.dart';
-import '../../auth/presentation/widgets/connect_anilist_dialog.dart';
-import '../../common/widgets/anilov_logo.dart';
-import '../../sync/domain/models/sync_state.dart';
-import '../../sync/presentation/providers/sync_provider.dart';
+import 'package:anilov/core/theme/app_theme.dart';
+import 'package:anilov/features/auth/presentation/providers/auth_provider.dart';
+import 'package:anilov/features/auth/presentation/widgets/connect_anilist_dialog.dart';
+import 'package:anilov/features/common/widgets/anilov_logo.dart';
+import 'package:anilov/features/sync/domain/models/sync_state.dart';
+import 'package:anilov/features/sync/presentation/providers/sync_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});

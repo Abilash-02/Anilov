@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../domain/models/anilist_user.dart';
+import 'package:anilov/features/auth/domain/models/anilist_user.dart';
 
 abstract class AuthStorage {
   Future<String?> getAccessToken();

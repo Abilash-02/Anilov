@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../anime/data/anilist_client.dart';
-import '../data/anilist_oauth_service.dart';
-import '../data/auth_repository.dart';
-import '../data/auth_storage.dart';
-import '../domain/models/anilist_user.dart';
-import '../domain/models/auth_state.dart';
+import 'package:anilov/features/anime/data/anilist_client.dart';
+import 'package:anilov/features/auth/data/anilist_oauth_service.dart';
+import 'package:anilov/features/auth/data/auth_repository.dart';
+import 'package:anilov/features/auth/data/auth_storage.dart';
+import 'package:anilov/features/auth/domain/models/anilist_user.dart';
+import 'package:anilov/features/auth/domain/models/auth_state.dart';
 
 final authStorageProvider = Provider<AuthStorage>((ref) {
   return SecureAuthStorage();

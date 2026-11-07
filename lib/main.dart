@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'core/router/app_router.dart';
-import 'core/theme/app_theme.dart';
-import 'features/auth/presentation/providers/auth_provider.dart';
-import 'features/notifications/notification_service.dart';
-import 'features/notifications/workmanager_service.dart';
-import 'features/settings/presentation/providers/settings_provider.dart';
+import 'package:anilov/core/router/app_router.dart';
+import 'package:anilov/core/theme/app_theme.dart';
+import 'package:anilov/features/auth/presentation/providers/auth_provider.dart';
+import 'package:anilov/features/notifications/notification_service.dart';
+import 'package:anilov/features/notifications/workmanager_service.dart';
+import 'package:anilov/features/settings/presentation/providers/settings_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

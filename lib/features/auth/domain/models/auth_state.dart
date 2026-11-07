@@ -1,4 +1,4 @@
-import 'anilist_user.dart';
+import 'package:anilov/features/auth/domain/models/anilist_user.dart';
 
 enum AuthStatus {
   unauthenticated,

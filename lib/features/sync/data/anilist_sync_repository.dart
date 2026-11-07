@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
-import '../../anime/data/anilist_client.dart';
-import '../../watchlist/data/watchlist_repository.dart';
-import '../../watchlist/domain/models/watch_status.dart';
-import '../../watchlist/domain/models/watchlist_item.dart';
+import 'package:anilov/features/anime/data/anilist_client.dart';
+import 'package:anilov/features/watchlist/data/watchlist_repository.dart';
+import 'package:anilov/features/watchlist/domain/models/watch_status.dart';
+import 'package:anilov/features/watchlist/domain/models/watchlist_item.dart';
 
 class SyncResult {
   final int totalSynced;
