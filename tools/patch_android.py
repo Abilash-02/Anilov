@@ -6,6 +6,7 @@ Idempotent Android project patcher for Anilov:
 2. Ensures INTERNET, POST_NOTIFICATIONS, RECEIVE_BOOT_COMPLETED, and media permissions are declared
 3. Ensures cleartext traffic is disabled (android:usesCleartextTraffic="false")
 4. Configures core library desugaring in android/app/build.gradle[.kts] for notifications/workmanager
+5. Ensures compileSdk is set to 37 and suppresses unsupported compile SDK warnings
 """
 
 import os
@@ -16,6 +17,7 @@ from pathlib import Path
 MANIFEST_PATH = Path("android/app/src/main/AndroidManifest.xml")
 GRADLE_GROOVY_PATH = Path("android/app/build.gradle")
 GRADLE_KTS_PATH = Path("android/app/build.gradle.kts")
+GRADLE_PROPERTIES_PATH = Path("android/gradle.properties")
 
 def patch_manifest():
     if not MANIFEST_PATH.exists():
@@ -37,13 +39,11 @@ def patch_manifest():
     ]
 
     for perm in permissions:
-        # Match by permission name
         name_match = re.search(r'android:name="([^"]+)"', perm)
         if not name_match:
             continue
         perm_name = name_match.group(1)
         if f'android:name="{perm_name}"' not in content:
-            # Insert right after <manifest ...>
             manifest_tag = re.search(r'(<manifest[^>]*>)', content)
             if manifest_tag:
                 idx = manifest_tag.end()
@@ -76,13 +76,11 @@ def patch_manifest():
         app_attrs = app_tag_match.group(1)
 
         new_attrs = app_attrs
-        # Replace or add android:label="Anilov"
         if 'android:label=' in new_attrs:
             new_attrs = re.sub(r'android:label="[^"]*"', 'android:label="Anilov"', new_attrs)
         else:
             new_attrs = ' android:label="Anilov"' + new_attrs
 
-        # Ensure android:usesCleartextTraffic="false"
         if 'android:usesCleartextTraffic=' in new_attrs:
             new_attrs = re.sub(r'android:usesCleartextTraffic="[^"]*"', 'android:usesCleartextTraffic="false"', new_attrs)
         else:
@@ -99,8 +97,25 @@ def patch_manifest():
         print(f"{MANIFEST_PATH} is already up to date (idempotent check passed).")
         return False
 
+def patch_gradle_properties():
+    if not GRADLE_PROPERTIES_PATH.exists():
+        print("android/gradle.properties not found; skipping properties patch.")
+        return False
+
+    content = GRADLE_PROPERTIES_PATH.read_text(encoding="utf-8")
+    original = content
+
+    if "android.suppressUnsupportedCompileSdk" not in content:
+        content += "\nandroid.suppressUnsupportedCompileSdk=37\n"
+        print("Added android.suppressUnsupportedCompileSdk=37 to gradle.properties")
+
+    if content != original:
+        GRADLE_PROPERTIES_PATH.write_text(content, encoding="utf-8")
+        print(f"Successfully patched {GRADLE_PROPERTIES_PATH}")
+        return True
+    return False
+
 def patch_gradle():
-    # Check for Groovy build.gradle or Kotlin build.gradle.kts
     target_path = None
     is_kts = False
     if GRADLE_GROOVY_PATH.exists():
@@ -115,7 +130,21 @@ def patch_gradle():
     content = target_path.read_text(encoding="utf-8")
     original = content
 
-    # 1. Ensure coreLibraryDesugaringEnabled is true in compileOptions
+    # 1. Ensure compileSdk is 37 for modern notification dependencies
+    if is_kts:
+        content = re.sub(
+            r'compileSdk\s*=\s*(?:flutter\.compileSdkVersion|\d+)',
+            'compileSdk = 37',
+            content
+        )
+    else:
+        content = re.sub(
+            r'compileSdk(?:Version)?\s*(?:=\s*)?(?:flutter\.compileSdkVersion|\d+)',
+            'compileSdkVersion = 37',
+            content
+        )
+
+    # 2. Ensure coreLibraryDesugaringEnabled is true in compileOptions
     if is_kts:
         if "isCoreLibraryDesugaringEnabled" not in content:
             compile_match = re.search(r'(compileOptions\s*\{)', content)
@@ -131,7 +160,7 @@ def patch_gradle():
                 content = content[:idx] + "\n        coreLibraryDesugaringEnabled true" + content[idx:]
                 print("Added coreLibraryDesugaringEnabled to compileOptions (groovy)")
 
-    # 2. Ensure desugar_jdk_libs dependency is present
+    # 3. Ensure desugar_jdk_libs dependency is present
     desugar_lib = "com.android.tools:desugar_jdk_libs:2.1.4"
     if desugar_lib not in content and "desugar_jdk_libs" not in content:
         dep_statement = (
@@ -162,6 +191,7 @@ def patch_gradle():
 def main():
     print("Running patch_android.py...")
     patch_manifest()
+    patch_gradle_properties()
     patch_gradle()
     print("Done.")
 
