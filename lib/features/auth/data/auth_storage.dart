@@ -25,10 +25,7 @@ class SecureAuthStorage implements AuthStorage {
   final FlutterSecureStorage _storage;
 
   SecureAuthStorage({FlutterSecureStorage? storage})
-      : _storage = storage ??
-            const FlutterSecureStorage(
-              aOptions: AndroidOptions(encryptedSharedPreferences: true),
-            );
+      : _storage = storage ?? const FlutterSecureStorage();
 
   @override
   Future<String?> getAccessToken() async {

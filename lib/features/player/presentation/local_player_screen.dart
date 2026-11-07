@@ -77,12 +77,12 @@ class _LocalPlayerScreenState extends State<LocalPlayerScreen> {
     });
 
     try {
-      final result = await FilePicker.pickFiles(
+      final files = await FilePicker.pickFiles(
         type: FileType.video,
       );
 
-      if (result != null && result.files.isNotEmpty) {
-        final file = result.files.first;
+      if (files.isNotEmpty) {
+        final file = files.first;
         final path = file.path;
         if (path != null) {
           await _loadVideo(path, file.name);
