@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../notifications/notification_service.dart';
 import '../../../schedule/presentation/providers/schedule_providers.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../../watchlist/domain/models/watch_status.dart';
 import '../../../watchlist/domain/models/watchlist_item.dart';
 import '../../../watchlist/presentation/providers/watchlist_providers.dart';
@@ -281,6 +283,10 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
                       watchlistItemAsync.asData?.value,
                       isDark,
                     ),
+                    const SizedBox(height: 12),
+
+                    // Quick Actions (Airing Reminders & Local Player)
+                    _buildQuickActionsBar(context, anime, isDark),
                     const SizedBox(height: 20),
 
                     // Quick Stats Bar
@@ -826,6 +832,55 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildQuickActionsBar(
+    BuildContext context,
+    AnimeMedia anime,
+    bool isDark,
+  ) {
+    final settings = ref.watch(settingsProvider);
+    final hasReminder = settings.showReminders.contains(anime.id);
+
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            icon: Icon(
+              hasReminder
+                  ? Icons.notifications_active_rounded
+                  : Icons.notifications_none_rounded,
+              size: 16,
+              color: hasReminder ? AppTheme.violetLight : null,
+            ),
+            label: Text(
+              hasReminder ? 'Reminder Set' : 'Airing Reminder',
+              style: const TextStyle(fontSize: 12),
+            ),
+            onPressed: () async {
+              final granted =
+                  await NotificationService.instance.requestPermission();
+              if (granted || hasReminder) {
+                await ref
+                    .read(settingsProvider.notifier)
+                    .toggleShowReminder(anime.id);
+              }
+            },
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: OutlinedButton.icon(
+            icon: const Icon(Icons.video_library_outlined, size: 16),
+            label: const Text(
+              'Local Player',
+              style: TextStyle(fontSize: 12),
+            ),
+            onPressed: () => context.push('/profile/player'),
+          ),
+        ),
+      ],
     );
   }
 

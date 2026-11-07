@@ -83,6 +83,14 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 8),
 
           _ProfileMenuItem(
+            icon: Icons.video_library_rounded,
+            title: 'Local Media Player',
+            subtitle: 'Play user-selected local video files offline',
+            onTap: () => context.go('/profile/player'),
+          ),
+          const SizedBox(height: 8),
+
+          _ProfileMenuItem(
             icon: Icons.settings_outlined,
             title: 'Settings',
             subtitle: 'Appearance, notifications, and storage',

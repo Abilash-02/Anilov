@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../notifications/notification_service.dart';
+import '../../settings/presentation/providers/settings_provider.dart';
 import 'providers/schedule_providers.dart';
 import 'widgets/schedule_card.dart';
 
@@ -225,6 +227,8 @@ class _WeekdayScheduleList extends ConsumerWidget {
           );
         }
 
+        final settings = ref.watch(settingsProvider);
+
         return RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(weeklyScheduleProvider);
@@ -233,7 +237,23 @@ class _WeekdayScheduleList extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             itemCount: items.length,
             itemBuilder: (context, index) {
-              return ScheduleCard(schedule: items[index]);
+              final schedule = items[index];
+              final isReminderSet =
+                  settings.showReminders.contains(schedule.mediaId);
+
+              return ScheduleCard(
+                schedule: schedule,
+                isReminderSet: isReminderSet,
+                onToggleReminder: () async {
+                  final granted =
+                      await NotificationService.instance.requestPermission();
+                  if (granted || isReminderSet) {
+                    await ref
+                        .read(settingsProvider.notifier)
+                        .toggleShowReminder(schedule.mediaId);
+                  }
+                },
+              );
             },
           ),
         );

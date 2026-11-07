@@ -5,6 +5,7 @@ import '../../features/anime/presentation/screens/anime_details_screen.dart';
 import '../../features/explore/presentation/explore_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/player/presentation/local_player_screen.dart';
 import '../../features/profile/presentation/about_screen.dart';
 import '../../features/profile/presentation/history_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
@@ -96,6 +97,10 @@ final GoRouter appRouter = GoRouter(
                 GoRoute(
                   path: 'settings',
                   builder: (context, state) => const SettingsScreen(),
+                ),
+                GoRoute(
+                  path: 'player',
+                  builder: (context, state) => const LocalPlayerScreen(),
                 ),
                 GoRoute(
                   path: 'about',

@@ -9,8 +9,15 @@ import '../../domain/models/airing_schedule.dart';
 
 class ScheduleCard extends StatelessWidget {
   final AiringSchedule schedule;
+  final bool isReminderSet;
+  final VoidCallback? onToggleReminder;
 
-  const ScheduleCard({super.key, required this.schedule});
+  const ScheduleCard({
+    super.key,
+    required this.schedule,
+    this.isReminderSet = false,
+    this.onToggleReminder,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -41,14 +48,17 @@ class ScheduleCard extends StatelessWidget {
               height: 100,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                color: isDark ? AppTheme.darkSurfaceVariant : AppTheme.lightSurfaceVariant,
+                color: isDark
+                    ? AppTheme.darkSurfaceVariant
+                    : AppTheme.lightSurfaceVariant,
               ),
               clipBehavior: Clip.antiAlias,
               child: media?.coverImage.displayUrl != null
                   ? CachedNetworkImage(
                       imageUrl: media!.coverImage.displayUrl!,
                       fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) => const Icon(Icons.broken_image, size: 28),
+                      errorWidget: (_, __, ___) =>
+                          const Icon(Icons.broken_image, size: 28),
                     )
                   : const Icon(Icons.movie, size: 28),
             ),
@@ -59,12 +69,13 @@ class ScheduleCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Airing Time and Countdown Badge
+                  // Airing Time and Countdown Badge + Reminder Button
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
                           color: AppTheme.violet.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(6),
@@ -75,7 +86,8 @@ class ScheduleCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.access_time_rounded, size: 13, color: AppTheme.violetLight),
+                            const Icon(Icons.access_time_rounded,
+                                size: 13, color: AppTheme.violetLight),
                             const SizedBox(width: 4),
                             Text(
                               schedule.formattedTime,
@@ -88,15 +100,43 @@ class ScheduleCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Text(
-                        schedule.countdownText,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: schedule.hasAired
-                              ? (isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted)
-                              : Colors.amber,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            schedule.countdownText,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: schedule.hasAired
+                                  ? (isDark
+                                      ? AppTheme.darkOnSurfaceMuted
+                                      : AppTheme.lightOnSurfaceMuted)
+                                  : Colors.amber,
+                            ),
+                          ),
+                          if (onToggleReminder != null) ...[
+                            const SizedBox(width: 4),
+                            InkWell(
+                              onTap: onToggleReminder,
+                              borderRadius: BorderRadius.circular(16),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Icon(
+                                  isReminderSet
+                                      ? Icons.notifications_active_rounded
+                                      : Icons.notifications_none_rounded,
+                                  size: 18,
+                                  color: isReminderSet
+                                      ? AppTheme.violetLight
+                                      : (isDark
+                                          ? AppTheme.darkOnSurfaceMuted
+                                          : AppTheme.lightOnSurfaceMuted),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),
@@ -119,14 +159,18 @@ class ScheduleCard extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: isDark ? AppTheme.darkSurfaceVariant : AppTheme.lightSurfaceVariant,
+                          color: isDark
+                              ? AppTheme.darkSurfaceVariant
+                              : AppTheme.lightSurfaceVariant,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           'Episode ${schedule.episode}',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                          style: const TextStyle(
+                              fontSize: 11, fontWeight: FontWeight.w700),
                         ),
                       ),
                       if (media?.displayFormat != null) ...[
@@ -135,17 +179,21 @@ class ScheduleCard extends StatelessWidget {
                           media!.displayFormat,
                           style: TextStyle(
                             fontSize: 11,
-                            color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
+                            color: isDark
+                                ? AppTheme.darkOnSurfaceMuted
+                                : AppTheme.lightOnSurfaceMuted,
                           ),
                         ),
                       ],
                       if (media?.averageScore != null) ...[
                         const Spacer(),
-                        const Icon(Icons.star_rounded, size: 14, color: Colors.amber),
+                        const Icon(Icons.star_rounded,
+                            size: 14, color: Colors.amber),
                         const SizedBox(width: 2),
                         Text(
                           '${media!.averageScore}%',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                          style: const TextStyle(
+                              fontSize: 11, fontWeight: FontWeight.w700),
                         ),
                       ],
                     ],

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 /// App-wide theme configuration for Anilov.
 /// Follows Material 3 design guidelines with dark charcoal background,
-/// deep indigo and violet accents, rounded cards, and accessible touch targets (>= 48dp).
+/// deep indigo and violet accents, rounded cards, accessible touch targets (>= 48dp),
+/// and high-contrast, polished Light and Dark themes.
 class AppTheme {
   AppTheme._();
 
@@ -68,6 +69,33 @@ class AppTheme {
           side: const BorderSide(color: Color(0xFF2E2E38), width: 1),
         ),
       ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: darkSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(cardRadius),
+          side: const BorderSide(color: Color(0xFF2E2E38), width: 1),
+        ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: darkSurface,
+        modalBackgroundColor: darkSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+      ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          side: WidgetStateProperty.all(
+            const BorderSide(color: Color(0xFF2E2E38)),
+          ),
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return violet.withValues(alpha: 0.25);
+            }
+            return Colors.transparent;
+          }),
+        ),
+      ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: darkSurface,
         indicatorColor: deepIndigo,
@@ -125,7 +153,7 @@ class AppTheme {
     );
   }
 
-  // Light Theme
+  // Polished Light Theme (RUN 5)
   static ThemeData get lightTheme {
     final colorScheme = const ColorScheme.light().copyWith(
       primary: violetDark,
@@ -161,6 +189,33 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(cardRadius),
           side: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: lightSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(cardRadius),
+          side: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
+        ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: lightSurface,
+        modalBackgroundColor: lightSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+      ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          side: WidgetStateProperty.all(
+            const BorderSide(color: Color(0xFFE5E7EB)),
+          ),
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return const Color(0xFFEDE9FE);
+            }
+            return Colors.transparent;
+          }),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(

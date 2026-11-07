@@ -1,6 +1,6 @@
 # Anilov Project Progress
 
-## Current State: RUN 4 (Schedule & Sources) — Completed
+## Current State: RUN 5 (Daily Updates & Polish) — Implemented
 
 | Run | Title | Status | CI Status |
 |---|---|---|---|
@@ -8,7 +8,7 @@
 | **RUN 2** | Data, Home, Explore, Details | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41305607753`) |
 | **RUN 3** | Persistence & Watchlist | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41321261934`) |
 | **RUN 4** | Schedule & Sources | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41332993906`) |
-| **RUN 5** | Daily Updates & Polish | Not yet implemented | - |
+| **RUN 5** | Daily Updates & Polish | Completed | Verifying in CI |
 | **RUN 6** | Optional: AniList OAuth Sync | Not yet implemented | - |
 
 ---
@@ -151,3 +151,41 @@
 - [x] **CI Verification & Artifacts**:
   - Run ID: `41332993906`.
   - Debug APK built and verified: `anilov-debug-apk`.
+
+---
+
+## RUN 5 Deliverables (Daily Updates & Polish)
+- [x] **Dependencies Added**:
+  - `video_player` (`>=2.8.0 <3.0.0`) & `chewie` (`>=1.8.0 <2.0.0`): Offline local media playback with full playback controls.
+  - `flutter_local_notifications` (`>=17.0.0 <24.0.0`): Local notification alerts and broadcast summaries with Android 13+ runtime permission management.
+  - `workmanager` (`>=0.5.2 <1.0.0`): Periodic daily background worker execution.
+  - `file_picker` (`>=8.0.0 <14.0.0`): System file picker for user-selected offline video files.
+- [x] **Daily Airing Updates & Notifications Architecture**:
+  - `NotificationService` (`lib/features/notifications/notification_service.dart`): Singleton managing notification channels, high-priority notifications, runtime `POST_NOTIFICATIONS` permission handling, and initial delay calculation.
+  - `WorkmanagerService` (`lib/features/notifications/workmanager_service.dart`): Background worker dispatcher (`@pragma('vm:entry-point') anilovCallbackDispatcher`) executing 24-hour periodic tasks for daily airing anime summaries.
+  - Per-show airing reminder toggle integrated into `ScheduleCard` and `AnimeDetailsScreen`.
+  - UI disclaimer documenting that background notification timing is subject to OS battery optimization.
+- [x] **Settings & Preferences Feature**:
+  - `AppSettings` (`lib/features/settings/domain/models/app_settings.dart`): Null-safe model managing ThemeMode, Adult Content filter (`isAdult: false` default), daily notifications toggle, reminder time picker, and per-show reminder IDs.
+  - `SettingsNotifier` (`lib/features/settings/presentation/providers/settings_provider.dart`): Persistent Riverpod Notifier backed by `SharedPreferences`.
+  - `SettingsScreen` (`lib/features/profile/presentation/settings_screen.dart`): Full UI with ThemeMode SegmentedButton (System, Dark, Light), Notification toggle, TimePicker trigger, WorkManager disclaimer, and Clear Cache action.
+  - Reactive `themeModeProvider` wired into `main.dart` for dynamic app-wide theme switching.
+- [x] **Authorized Local Media Playback**:
+  - `LocalPlayerScreen` (`lib/features/player/presentation/local_player_screen.dart`): Offline video playback for user-selected local files using `file_picker`, `video_player`, and `chewie`.
+  - Features: play, pause, seek, full-screen, buffering indicator, error recovery state, and persistent playback resume position via `SharedPreferences`.
+  - Route `/profile/player` integrated into `app_router.dart` and accessible from `ProfileScreen` menu and `AnimeDetailsScreen`.
+  - Strict compliance with legal boundaries: local user files only, no streaming scrapers, no unlicensed third-party streams, and no DRM bypass.
+- [x] **Light Theme Polish**:
+  - Polished `AppTheme.lightTheme` with crisp contrast, clean borders (`0xFFE5E7EB`), dedicated `dialogTheme`, `bottomSheetTheme`, and `segmentedButtonTheme`.
+- [x] **About & Attribution**:
+  - Updated `AboutScreen` (`lib/features/profile/presentation/about_screen.dart`) with version `1.0.0 (RUN 5 — Daily Updates & Polish)`, comprehensive AniList & ani.zip attribution, YouTube terms, and full open-source package attribution.
+- [x] **Android Configuration & Desugaring**:
+  - Updated `tools/patch_android.py` to idempotently declare `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED`, `VIBRATE`, `WAKE_LOCK`, `READ_MEDIA_VIDEO`, and `READ_EXTERNAL_STORAGE` permissions.
+  - Added automated Groovy (`build.gradle`) and Kotlin (`build.gradle.kts`) patching to enable Java 8 core library desugaring (`isCoreLibraryDesugaringEnabled` / `desugar_jdk_libs:2.1.4`).
+- [x] **Automated Test Suite**:
+  - `test/services/settings_provider_test.dart` (5 tests): Settings defaults, formatting, copyWith, Riverpod notifier persistence, and reminder toggles.
+  - `test/services/notification_service_test.dart` (3 tests): Initial delay calculation for same-day and next-day, channel configuration.
+  - `test/presentation/player_widget_test.dart` (1 test): LocalPlayerScreen empty state, file picker action, instructions.
+  - `test/presentation/settings_widget_test.dart` (1 test): SettingsScreen appearance segments, notifications, disclaimer, and filters.
+  - `test/presentation/about_widget_test.dart` (1 test): AboutScreen legal policy, attributions, and package credits.
+  - All 74 existing tests preserved and passing (total 85 tests).
