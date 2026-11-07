@@ -62,7 +62,7 @@ class SqfliteHistoryRepository implements HistoryRepository {
     final db = await _dbHelper.database;
     final result = await db.query(
       AppDatabase.tableHistory,
-      orderBy: 'watched_at DESC',
+      orderBy: 'watched_at DESC, id DESC',
       limit: limit,
       offset: offset,
     );

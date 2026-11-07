@@ -297,11 +297,13 @@ void main() {
         title: 'Steins;Gate',
         episode: 1,
       );
+      await Future<void>.delayed(const Duration(milliseconds: 10));
       await historyRepo.recordHistory(
         animeId: 10,
         title: 'Steins;Gate',
         episode: 2,
       );
+      await Future<void>.delayed(const Duration(milliseconds: 10));
       await historyRepo.recordHistory(
         animeId: 20,
         title: 'Death Note',
