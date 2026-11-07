@@ -877,7 +877,7 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
               'Local Player',
               style: TextStyle(fontSize: 12),
             ),
-            onPressed: () => context.push('/profile/player'),
+            onPressed: () => context.push('/player'),
           ),
         ),
       ],

@@ -38,6 +38,18 @@ final GoRouter appRouter = GoRouter(
         return AnimeDetailsScreen(id: id);
       },
     ),
+    GoRoute(
+      path: '/player',
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) {
+        final filePath = state.uri.queryParameters['file'];
+        final url = state.uri.queryParameters['url'];
+        return LocalPlayerScreen(
+          initialFilePath: filePath,
+          initialUrl: url,
+        );
+      },
+    ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return AppShell(navigationShell: navigationShell);
@@ -100,7 +112,15 @@ final GoRouter appRouter = GoRouter(
                 ),
                 GoRoute(
                   path: 'player',
-                  builder: (context, state) => const LocalPlayerScreen(),
+                  parentNavigatorKey: rootNavigatorKey,
+                  builder: (context, state) {
+                    final filePath = state.uri.queryParameters['file'];
+                    final url = state.uri.queryParameters['url'];
+                    return LocalPlayerScreen(
+                      initialFilePath: filePath,
+                      initialUrl: url,
+                    );
+                  },
                 ),
                 GoRoute(
                   path: 'about',

@@ -260,8 +260,8 @@ class _ReactiveProfileScreen extends ConsumerWidget {
           _ProfileMenuItem(
             icon: Icons.video_library_rounded,
             title: 'Local Media Player',
-            subtitle: 'Play user-selected local video files offline',
-            onTap: () => context.go('/profile/player'),
+            subtitle: 'Play local video files and direct video streams',
+            onTap: () => context.push('/player'),
           ),
           const SizedBox(height: 8),
 
@@ -367,8 +367,8 @@ class _ProfileScreenContent extends StatelessWidget {
           _ProfileMenuItem(
             icon: Icons.video_library_rounded,
             title: 'Local Media Player',
-            subtitle: 'Play user-selected local video files offline',
-            onTap: () => context.go('/profile/player'),
+            subtitle: 'Play local video files and direct video streams',
+            onTap: () => context.push('/player'),
           ),
           const SizedBox(height: 8),
 

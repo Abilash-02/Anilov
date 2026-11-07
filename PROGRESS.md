@@ -10,6 +10,7 @@
 | **RUN 4** | Schedule & Sources | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41332993906`) |
 | **RUN 5** | Daily Updates & Polish | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42366059244`) |
 | **RUN 6** | AniList OAuth Sync | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42375711708`) |
+| **POST-RUN 6** | Local Player Bug Fix & Custom Video URL | Completed | Pending CI Verification |
 
 ---
 
@@ -236,3 +237,27 @@
   - Run ID: `42375711708` (Passed in 7m 29s).
   - All 103/103 tests passed, `flutter analyze` passed with 0 issues.
   - Debug APK built and verified: `anilov-debug-apk`.
+
+---
+
+## POST-RUN 6 Deliverables (Local Player Bug Fix + Custom Video URL Support)
+- [x] **Local Player Navigation Assertion Fix (`!keyReservation.contains(key)`)**:
+  - Root Cause: `/profile/player` was declared as a sub-route inside the Profile branch of `StatefulShellRoute` without `parentNavigatorKey: rootNavigatorKey`. When navigating from `/anime/:id` (pushed on the root navigator) using `context.push('/profile/player')`, GoRouter attempted to inflate the shell branch navigator a second time, resulting in a duplicate `GlobalKey<NavigatorState>` collision in Flutter's `BuildOwner` (`assert(!keyReservation.contains(key))`).
+  - Resolution: Configured `parentNavigatorKey: rootNavigatorKey` on `/profile/player` and added canonical top-level `/player` route mounted directly on `rootNavigatorKey`. Updated `AnimeDetailsScreen` to push `/player`.
+- [x] **Custom Video URL Support & Video Source Evaluator**:
+  - Created `VideoSourceEvaluator` (`lib/features/player/domain/video_source_evaluator.dart`):
+    - Evaluates URL formats and direct stream extensions (`.mp4`, `.m4v`, `.mkv`, `.webm`, `.mov`, `.3gp`, `.flv`, `.ts`, `.m3u8`, `.mpd`).
+    - Detects external cloud share links and webpages (including Google Share `https://share.google/0XKcrS1PHQZW2NgkN`, Google Drive, YouTube) without scraping or authentication bypass.
+    - Probes `Content-Type` headers safely for dynamic query URLs.
+- [x] **LocalPlayerScreen Enhancements** (`lib/features/player/presentation/local_player_screen.dart`):
+  - Added URL stream action button in AppBar and empty state.
+  - Interactive URL input dialog with Google Share preset chip.
+  - Informative dialog when external webpage/share link is detected, with description and "Open Externally" option using `url_launcher`.
+  - Direct network video playback using `VideoPlayerController.networkUrl`.
+  - Cleaned up controller lifecycle and safe position persistence during disposal.
+  - Preserved existing offline local file picking and playback.
+- [x] **Automated Regression & Unit Tests**:
+  - `test/player/video_source_evaluator_test.dart` (7 tests): URL validation, Google Share link detection, Drive/YouTube detection, direct video stream detection, and content type probing.
+  - `test/presentation/player_widget_test.dart` (6 tests): Empty state, prompt dialog with preset, Google Share test chip with External Webpage dialog, safe controller disposal, regression test navigating to `/player` from `AnimeDetailsScreen` without GlobalKey assertion, and regression test navigating from `ProfileScreen`.
+  - Preserved all 103 existing tests.
+
