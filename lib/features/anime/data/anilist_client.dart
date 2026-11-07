@@ -99,19 +99,22 @@ class AniListClient {
     }
 
     try {
-      final options = Options();
-      if (authToken != null && authToken.isNotEmpty) {
-        options.headers = {'Authorization': 'Bearer $authToken'};
-      }
-
-      final response = await _dio.post(
-        '',
-        data: {
-          'query': query,
-          'variables': variables,
-        },
-        options: options,
-      );
+      final response = (authToken != null && authToken.isNotEmpty)
+          ? await _dio.post(
+              '',
+              data: {
+                'query': query,
+                'variables': variables,
+              },
+              options: Options(headers: {'Authorization': 'Bearer $authToken'}),
+            )
+          : await _dio.post(
+              '',
+              data: {
+                'query': query,
+                'variables': variables,
+              },
+            );
 
       final data = response.data;
       if (data is Map<String, dynamic>) {
