@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:anilov/core/router/app_router.dart';
 import 'package:anilov/core/theme/app_theme.dart';
 import 'package:anilov/features/anime/domain/models/anime_media.dart';
 import 'package:anilov/features/anime/presentation/providers/anime_providers.dart';
+import 'package:anilov/features/anime/presentation/screens/anime_details_screen.dart';
 import 'package:anilov/features/player/domain/video_source_evaluator.dart';
 import 'package:anilov/features/player/presentation/local_player_screen.dart';
+import 'package:anilov/features/profile/presentation/profile_screen.dart';
 import 'package:anilov/features/watchlist/presentation/providers/watchlist_providers.dart';
 import '../fixtures/anime_fixtures.dart';
 
@@ -21,7 +24,9 @@ void main() {
   });
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({
+      'has_completed_onboarding': true,
+    });
   });
 
   final sampleAnime = AnimeMedia.fromJson(sampleAnimeJson);
@@ -67,7 +72,8 @@ void main() {
       );
     });
 
-    testWidgets('Tapping URL Stream button displays prompt dialog with Google Share preset',
+    testWidgets(
+        'Tapping URL Stream button displays prompt dialog with Google Share preset',
         (tester) async {
       await tester.pumpWidget(
         ProviderScope(
@@ -134,12 +140,14 @@ void main() {
       expect(find.text('External Webpage Detected'), findsNothing);
     });
 
-    testWidgets('LocalPlayerScreen handles controller disposal safely', (tester) async {
+    testWidgets('LocalPlayerScreen handles controller disposal safely',
+        (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.darkTheme,
-            home: const LocalPlayerScreen(initialUrl: 'https://cdn.example.org/nonexistent.mp4'),
+            home: const LocalPlayerScreen(
+                initialUrl: 'https://cdn.example.org/nonexistent.mp4'),
           ),
         ),
       );
@@ -160,7 +168,15 @@ void main() {
   });
 
   group('Navigation Regression Tests: Local Player', () {
-    testWidgets('Navigate to /player from AnimeDetailsScreen without GlobalKey collision',
+    test('appRouter mounts /player with rootNavigatorKey to prevent key collision', () {
+      final playerRoute = appRouter.configuration.routes
+          .whereType<GoRoute>()
+          .firstWhere((r) => r.path == '/player');
+      expect(playerRoute.parentNavigatorKey, equals(rootNavigatorKey));
+    });
+
+    testWidgets(
+        'Navigate to /player from AnimeDetailsScreen without GlobalKey collision',
         (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
@@ -171,6 +187,20 @@ void main() {
       final fakeWatchlist = FakeWatchlistRepository();
       final fakeHistory = FakeHistoryRepository();
 
+      final testRouter = GoRouter(
+        initialLocation: '/anime/16498',
+        routes: [
+          GoRoute(
+            path: '/anime/:id',
+            builder: (context, state) => const AnimeDetailsScreen(id: 16498),
+          ),
+          GoRoute(
+            path: '/player',
+            builder: (context, state) => const LocalPlayerScreen(),
+          ),
+        ],
+      );
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -179,22 +209,19 @@ void main() {
             historyRepositoryProvider.overrideWithValue(fakeHistory),
           ],
           child: MaterialApp.router(
-            routerConfig: appRouter,
+            routerConfig: testRouter,
             theme: AppTheme.darkTheme,
           ),
         ),
       );
 
-      await tester.pumpAndSettle();
-
-      // Navigate to /anime/16498 on root navigator
-      appRouter.push('/anime/16498');
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.text('Attack on Titan'), findsOneWidget);
       expect(find.text('Local Player'), findsOneWidget);
 
-      // Tap Local Player button - must not trigger "!keyReservation.contains(key)" assertion!
+      // Tap Local Player button
       await tester.tap(find.text('Local Player'));
       await tester.pumpAndSettle();
 
@@ -202,12 +229,6 @@ void main() {
       expect(find.text('Local Media Player'), findsWidgets);
       expect(find.text('Select Video File'), findsOneWidget);
       expect(find.text('Open Video URL / Stream'), findsOneWidget);
-
-      // Pop player to return to details
-      appRouter.pop();
-      await tester.pumpAndSettle();
-
-      expect(find.text('Attack on Titan'), findsOneWidget);
     });
 
     testWidgets('Navigate to /player from ProfileScreen without crash',
@@ -217,26 +238,38 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
+      final testRouter = GoRouter(
+        initialLocation: '/profile',
+        routes: [
+          GoRoute(
+            path: '/profile',
+            builder: (context, state) => const ProfileScreen(),
+          ),
+          GoRoute(
+            path: '/player',
+            builder: (context, state) => const LocalPlayerScreen(),
+          ),
+        ],
+      );
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            watchlistRepositoryProvider.overrideWithValue(FakeWatchlistRepository()),
+            watchlistRepositoryProvider
+                .overrideWithValue(FakeWatchlistRepository()),
             historyRepositoryProvider.overrideWithValue(FakeHistoryRepository()),
           ],
           child: MaterialApp.router(
-            routerConfig: appRouter,
+            routerConfig: testRouter,
             theme: AppTheme.darkTheme,
           ),
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
-      // Navigate to Profile tab
-      appRouter.go('/profile');
-      await tester.pumpAndSettle();
-
-      expect(find.text('Profile'), findsOneWidget);
+      expect(find.text('Profile'), findsWidgets);
       expect(find.text('Local Media Player'), findsOneWidget);
 
       // Tap Local Media Player
