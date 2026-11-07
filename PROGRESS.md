@@ -8,7 +8,7 @@
 | **RUN 2** | Data, Home, Explore, Details | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41305607753`) |
 | **RUN 3** | Persistence & Watchlist | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41321261934`) |
 | **RUN 4** | Schedule & Sources | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `41332993906`) |
-| **RUN 5** | Daily Updates & Polish | Completed | Verifying in CI |
+| **RUN 5** | Daily Updates & Polish | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42365080897`) |
 | **RUN 6** | Optional: AniList OAuth Sync | Not yet implemented | - |
 
 ---
@@ -188,4 +188,8 @@
   - `test/presentation/player_widget_test.dart` (1 test): LocalPlayerScreen empty state, file picker action, instructions.
   - `test/presentation/settings_widget_test.dart` (1 test): SettingsScreen appearance segments, notifications, disclaimer, and filters.
   - `test/presentation/about_widget_test.dart` (1 test): AboutScreen legal policy, attributions, and package credits.
-  - All 74 existing tests preserved and passing (total 85 tests).
+  - All 74 existing tests preserved and passing (total 86/86 tests).
+- [x] **CI Verification & Artifacts**:
+  - Run ID: `42365080897` (Passed in 6m 34s).
+  - All 86/86 tests passed, `flutter analyze` passed with 0 issues.
+  - Debug APK built and verified: `anilov-debug-apk`.
