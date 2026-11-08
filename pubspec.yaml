@@ -36,6 +36,9 @@ dev_dependencies:
   mocktail: ">=1.0.0 <2.0.0"
   sqflite_common_ffi: ">=2.3.0 <3.0.0"
 
+dependency_overrides:
+  sqlite3: "2.4.6"
+
 flutter:
   uses-material-design: true
   assets:
