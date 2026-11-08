@@ -15,6 +15,7 @@ import '../../../watchlist/presentation/widgets/watchlist_edit_sheet.dart';
 import '../../domain/models/anime_media.dart';
 import '../providers/anime_providers.dart';
 import '../widgets/trailer_player_dialog.dart';
+import '../widgets/watch_now_sheet.dart';
 
 class AnimeDetailsScreen extends ConsumerStatefulWidget {
   final int id;
@@ -275,6 +276,15 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
+
+                    // Primary Action: Watch Now (AniKoto Episode Browser & Dedicated Player)
+                    _buildWatchNowButton(
+                      context,
+                      anime,
+                      watchlistItemAsync.asData?.value,
+                      isDark,
+                    ),
+                    const SizedBox(height: 12),
 
                     // Watchlist Controls (Persistence via sqflite)
                     _buildWatchlistSection(
@@ -657,6 +667,43 @@ class _AnimeDetailsScreenState extends ConsumerState<AnimeDetailsScreen> {
     );
   }
 
+  Widget _buildWatchNowButton(
+    BuildContext context,
+    AnimeMedia anime,
+    WatchlistItem? watchlistItem,
+    bool isDark,
+  ) {
+    final progress = watchlistItem?.progress ?? 0;
+    final totalEps = anime.episodes ?? 0;
+    final nextEp = (progress < totalEps || totalEps == 0) ? progress + 1 : 1;
+    final label = progress > 0 ? 'Watch Now (Episode $nextEp)' : 'Watch Now';
+
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: FilledButton.icon(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppTheme.violet,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 1,
+        ),
+        onPressed: () => WatchNowSheet.show(context, anime: anime),
+        icon: const Icon(Icons.play_arrow_rounded, size: 24),
+        label: Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 15,
+            letterSpacing: 0.3,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildWatchlistSection(
     BuildContext context,
     AnimeMedia anime,
@@ -988,18 +1035,26 @@ class _EpisodesSection extends ConsumerWidget {
                 final ep = episodes[index];
                 final isWatched = ep.episodeNumber <= currentProgress;
 
-                return Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppTheme.darkSurface : AppTheme.lightSurfaceVariant,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: isWatched
-                          ? Colors.green.withValues(alpha: 0.4)
-                          : (isDark ? const Color(0xFF2E2E38) : const Color(0xFFE5E7EB)),
+                return InkWell(
+                  onTap: () =>
+                      context.push('/watch/${anime.id}?ep=${ep.episodeNumber}'),
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppTheme.darkSurface
+                          : AppTheme.lightSurfaceVariant,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isWatched
+                            ? Colors.green.withValues(alpha: 0.4)
+                            : (isDark
+                                ? const Color(0xFF2E2E38)
+                                : const Color(0xFFE5E7EB)),
+                      ),
                     ),
-                  ),
-                  child: Row(
+                    child: Row(
                     children: [
                       // Thumbnail or ep box
                       Container(
@@ -1080,8 +1135,9 @@ class _EpisodesSection extends ConsumerWidget {
                       ),
                     ],
                   ),
-                );
-              },
+                ),
+              );
+            },
             ),
             const SizedBox(height: 24),
           ],

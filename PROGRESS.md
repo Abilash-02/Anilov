@@ -1,6 +1,6 @@
 # Anilov Project Progress
 
-## Current State: RUN 6 (AniList OAuth Sync) — Implemented
+## Current State: RUN 7 (AniKoto Source Integration) — Implemented
 
 | Run | Title | Status | CI Status |
 |---|---|---|---|
@@ -11,6 +11,7 @@
 | **RUN 5** | Daily Updates & Polish | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42366059244`) |
 | **RUN 6** | AniList OAuth Sync | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42375711708`) |
 | **POST-RUN 6** | Local Player Bug Fix & Custom Video URL | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42379876391`) |
+| **RUN 7** | AniKoto Source Integration | Completed | Pending CI Verification |
 
 ---
 
@@ -264,4 +265,47 @@
   - Run ID: `42379876391` (Passed in 7m 59s).
   - All 116/116 tests passed, `flutter analyze` passed with 0 issues.
   - Debug APK built and verified: `anilov-debug-apk`.
+
+---
+
+## RUN 7 Deliverables (AniKoto Source Integration)
+- [x] **Source Website Inspection & Legal Policy Evaluation**:
+  - Inspected `https://anikoto.cz/home` and watch endpoints (`https://anikoto.cz/watch/<slug>/ep-<n>`).
+  - Verified server headers return `X-Frame-Options: SAMEORIGIN` and Cloudflare protection.
+  - Inspected client scripts confirming dynamic server streams require obfuscated internal `vrf` token generation.
+  - Strictly enforced security boundaries: no hidden stream URL scraping, no DRM bypass, no authentication tampering.
+  - Formulated `AnikotoPlaybackEvaluation`: in-app iframe embedding is restricted by source (`SAMEORIGIN`), and official playback is safely provided via external browser launch.
+- [x] **Domain Models & Providers**:
+  - `PlaybackProviderType` enum (`anikoto`, `localPlayer`) with display names and descriptions (`lib/features/anime/domain/models/playback_provider.dart`).
+  - `AnikotoSeason`, `AnikotoEpisode`, `AnikotoShowDetails`, and `AnikotoPlaybackEvaluation` models.
+  - Riverpod state providers in `lib/features/anime/presentation/providers/anikoto_providers.dart`: `anikotoClientProvider`, `selectedPlaybackProvider`, `anikotoShowProvider`, and `selectedSeasonIndexProvider`.
+- [x] **AniKoto Data Client** (`lib/features/anime/data/anikoto_client.dart`):
+  - HTTP client with Dio, custom User-Agent, and 5-minute in-memory caching.
+  - Parses AniKoto search HTML (`/filter?keyword=...`) for `tipId`, `slug`, `title`, poster, and sub/dub/total episode counts.
+  - Parses AniKoto seasons API (`/api/seasons/<tipId>`) for season names, slugs, and banners.
+  - Resilient `resolveShow` with multi-query title matching (Romaji, English, display title) and graceful fallback generation for offline/network failure resilience.
+- [x] **Anime Details "Watch Now" Flow & Episode Browser**:
+  - Added prominent **"Watch Now"** primary button to `AnimeDetailsScreen` (`lib/features/anime/presentation/screens/anime_details_screen.dart`), indicating next episode to watch.
+  - Created `WatchNowSheet` modal bottom sheet (`lib/features/anime/presentation/widgets/watch_now_sheet.dart`):
+    - Provider switcher between AniKoto Source and Local Player.
+    - Available seasons selector chips (Season 1, Season 2, etc.).
+    - Episode grid with watched progress checkmarks and active next-episode highlighting.
+    - 1-tap quick action: "Continue Ep N" / "Play Ep 1".
+  - Made episode list cards in `AnimeDetailsScreen` clickable to launch the dedicated player for that episode.
+- [x] **Dedicated Landscape-Capable In-App Player**:
+  - Created `EpisodePlayerScreen` (`lib/features/player/presentation/episode_player_screen.dart`):
+    - Route `/watch/:id` integrated into `app_router.dart` mounted on `rootNavigatorKey`.
+    - Dedicated landscape orientation support with `SystemChrome.setPreferredOrientations` toggle and responsive landscape UI.
+    - Episode navigation controls: Previous button, Next button, boundary protection (disabled at start/end of season).
+    - Episode quick switcher modal grid.
+    - Source website embedding status banner clearly explaining `X-Frame-Options: SAMEORIGIN` and security compliance.
+    - Official external playback action: **"Watch Episode N on AniKoto"** via `url_launcher`.
+    - Secondary quick action to switch to Local Media / Direct Stream player.
+    - Mark as Watched action updating SQLite Watchlist progress and watch history.
+    - Comprehensive loading, retry, and error states.
+- [x] **Comprehensive Test Suite** (16 new tests, total 132 tests):
+  - `test/models/anikoto_model_test.dart` (5 tests): Season model serialization/fallback, episode watch URL construction, show details with season slugs, playback evaluation policy with SAMEORIGIN rule, and provider enum properties.
+  - `test/repository/anikoto_repository_test.dart` (7 tests): Search HTML parsing, empty/malformed HTML handling, seasons HTML parsing, slugify utility, episode URL generation, playback evaluation, resolveShow offline fallback, and cache clearing.
+  - `test/presentation/anikoto_player_widget_test.dart` (5 tests): WatchNowSheet rendering/provider tabs/episode grid, EpisodePlayerScreen embed restriction notice/external button, navigation boundaries and next increment, episode modal selection, landscape orientation toggle, and AnimeDetailsScreen Watch Now button tap.
+  - Preserved all 116 existing tests without regression.
 

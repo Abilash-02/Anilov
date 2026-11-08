@@ -5,6 +5,7 @@ import '../../features/anime/presentation/screens/anime_details_screen.dart';
 import '../../features/explore/presentation/explore_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/player/presentation/episode_player_screen.dart';
 import '../../features/player/presentation/local_player_screen.dart';
 import '../../features/profile/presentation/about_screen.dart';
 import '../../features/profile/presentation/history_screen.dart';
@@ -36,6 +37,23 @@ final GoRouter appRouter = GoRouter(
         final idStr = state.pathParameters['id'] ?? '0';
         final id = int.tryParse(idStr) ?? 0;
         return AnimeDetailsScreen(id: id);
+      },
+    ),
+    GoRoute(
+      path: '/watch/:id',
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) {
+        final idStr = state.pathParameters['id'] ?? '0';
+        final id = int.tryParse(idStr) ?? 0;
+        final epStr = state.uri.queryParameters['ep'];
+        final ep = int.tryParse(epStr ?? '1') ?? 1;
+        final seasonStr = state.uri.queryParameters['season'];
+        final season = int.tryParse(seasonStr ?? '0') ?? 0;
+        return EpisodePlayerScreen(
+          animeId: id,
+          initialEpisodeNumber: ep,
+          initialSeasonIndex: season,
+        );
       },
     ),
     GoRoute(
