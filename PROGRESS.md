@@ -11,7 +11,7 @@
 | **RUN 5** | Daily Updates & Polish | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42366059244`) |
 | **RUN 6** | AniList OAuth Sync | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42375711708`) |
 | **POST-RUN 6** | Local Player Bug Fix & Custom Video URL | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42379876391`) |
-| **RUN 7** | AniKoto Source Integration | Completed | Pending CI Verification |
+| **RUN 7** | AniKoto Source Integration | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42448562802`) |
 
 ---
 
@@ -303,9 +303,13 @@
     - Secondary quick action to switch to Local Media / Direct Stream player.
     - Mark as Watched action updating SQLite Watchlist progress and watch history.
     - Comprehensive loading, retry, and error states.
-- [x] **Comprehensive Test Suite** (16 new tests, total 132 tests):
+- [x] **Comprehensive Test Suite** (21 new tests, total 137 tests):
   - `test/models/anikoto_model_test.dart` (5 tests): Season model serialization/fallback, episode watch URL construction, show details with season slugs, playback evaluation policy with SAMEORIGIN rule, and provider enum properties.
   - `test/repository/anikoto_repository_test.dart` (7 tests): Search HTML parsing, empty/malformed HTML handling, seasons HTML parsing, slugify utility, episode URL generation, playback evaluation, resolveShow offline fallback, and cache clearing.
   - `test/presentation/anikoto_player_widget_test.dart` (5 tests): WatchNowSheet rendering/provider tabs/episode grid, EpisodePlayerScreen embed restriction notice/external button, navigation boundaries and next increment, episode modal selection, landscape orientation toggle, and AnimeDetailsScreen Watch Now button tap.
   - Preserved all 116 existing tests without regression.
+- [x] **CI Verification & Artifacts**:
+  - Run ID: `42448562802` (Passed in 7m 43s).
+  - All 137/137 tests passed, `flutter analyze` passed with 0 issues.
+  - Debug APK built and verified: `anilov-debug-apk` (size: 180MB).
 
