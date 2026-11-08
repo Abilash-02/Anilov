@@ -195,9 +195,21 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
 
           // Content body based on Provider
           if (currentProvider == PlaybackProviderType.localPlayer)
-            _buildLocalPlayerOption(context, isDark)
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  child: _buildLocalPlayerOption(context, isDark),
+                ),
+              ),
+            )
           else if (currentProvider == PlaybackProviderType.fetchKickass)
-            _buildFetchContent(context, isDark)
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  child: _buildFetchContent(context, isDark),
+                ),
+              ),
+            )
           else if (currentProvider == PlaybackProviderType.authorizedStream)
             Expanded(
               child: _buildAuthorizedContent(context, watchedProgress, isDark),

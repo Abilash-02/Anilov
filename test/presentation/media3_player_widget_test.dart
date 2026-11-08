@@ -113,8 +113,8 @@ void main() {
       expect(find.text('Fetch (KickassAnime) Scraper Limitation'), findsOneWidget);
       expect(find.text('Switch to In-App Player'), findsOneWidget);
 
-      // Switch back to Authorized In-App Player
-      await tester.tap(find.text('Switch to In-App Player'));
+      // Switch back to Authorized In-App Player via source switcher pill
+      await tester.tap(find.text('Authorized Stream'));
       await tester.pumpAndSettle();
 
       // Switch to AniKoto provider
