@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/anilist_client.dart';
 import '../../data/anilist_repository_impl.dart';
 import '../../data/anime_repository.dart';
+import '../../data/providers/authorized_anime_source_provider.dart';
 import '../../domain/models/anime_media.dart';
 
 final animeClientProvider = Provider<AniListClient>((ref) {
@@ -66,6 +67,10 @@ final homeDataProvider = FutureProvider.autoDispose<HomeData>((ref) async {
 
 final animeDetailsProvider =
     FutureProvider.family.autoDispose<AnimeMedia, int>((ref, id) async {
+  final authorized = AuthorizedAnimeSourceProvider.findInCatalog(id);
+  if (authorized != null) {
+    return authorized;
+  }
   final repo = ref.watch(animeRepositoryProvider);
   return repo.getAnimeDetails(id);
 });

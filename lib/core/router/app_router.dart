@@ -49,10 +49,12 @@ final GoRouter appRouter = GoRouter(
         final ep = int.tryParse(epStr ?? '1') ?? 1;
         final seasonStr = state.uri.queryParameters['season'];
         final season = int.tryParse(seasonStr ?? '0') ?? 0;
+        final providerStr = state.uri.queryParameters['provider'];
         return EpisodePlayerScreen(
           animeId: id,
           initialEpisodeNumber: ep,
           initialSeasonIndex: season,
+          initialProvider: providerStr,
         );
       },
     ),

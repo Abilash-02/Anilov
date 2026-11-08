@@ -1,6 +1,6 @@
 # Anilov Project Progress
 
-## Current State: RUN 7 (AniKoto Source Integration) — Implemented
+## Current State: RUN 8 (Fetch-Inspired Source & Media3 Player Integration) — Implemented
 
 | Run | Title | Status | CI Status |
 |---|---|---|---|
@@ -12,6 +12,7 @@
 | **RUN 6** | AniList OAuth Sync | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42375711708`) |
 | **POST-RUN 6** | Local Player Bug Fix & Custom Video URL | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42379876391`) |
 | **RUN 7** | AniKoto Source Integration | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42448562802`) |
+| **RUN 8** | Fetch-Inspired Source & Native Media3 Player | Completed | Pending CI |
 
 ---
 
@@ -312,4 +313,54 @@
   - Run ID: `42448562802` (Passed in 7m 43s).
   - All 137/137 tests passed, `flutter analyze` passed with 0 issues.
   - Debug APK built and verified: `anilov-debug-apk` (size: 180MB).
+
+---
+
+## RUN 8 Deliverables (Complete Fetch-Inspired Source & Native Media3 Player Integration)
+- [x] **Reference Repository Inspection (`snehilrx/Fetch`)**:
+  - Modules Analyzed: `app`, `base`, `kickassanime`, `shinebar`, `github`.
+  - Architecture: Multi-module Gradle build with Retrofit, Room DB, OkHttp 3, Coroutines, and Android Media3 ExoPlayer (`androidx.media3:media3-exoplayer:1.1.1`).
+  - Licence Compliance: Fetch is licensed under GPL-3.0. To avoid license tainting and copyright violations, Fetch Kotlin code was NOT copied directly. Its clean architectural patterns (modular source provider, ExoPlayer controls, multi-bitrate selection, subtitle switching, and progress saving) were independently authored for Anilov in Dart/Flutter.
+  - Source Investigation: Fetch relied on KickassAnime (`kickassanime.mx`), an unofficial streaming index without a public API that enforced Cloudflare anti-bot checks (hence `com.fetch.cloudflarebypass` in Fetch). In strict adherence to Anilov security and legal guidelines, scraper bypass was rejected, its limitation documented, and an officially authorized HLS source provider implemented.
+- [x] **Modular AnimeSourceProvider Architecture** (`lib/features/anime/domain/models/anime_source.dart`):
+  - Abstract interface `AnimeSourceProvider`:
+    - `searchAnime(query)`: Provider catalogue search.
+    - `getAnimeDetails(identifier)`: Metadata retrieval by id or slug.
+    - `getSeasons(anime)`: Season discovery.
+    - `getEpisodes(anime, seasonSlug)`: Episode listing.
+    - `getEpisodePlayback(anime, episodeNumber, seasonSlug)`: Resolves stream tracks, subtitles, and availability.
+  - Models: `SourceAvailabilityStatus`, `SourceStreamTrack`, `SourceSubtitleTrack`, `AnimeSourceEpisode`, `AnimeSourceSeason`, `EpisodePlaybackInfo`.
+- [x] **Integrated Source Providers** (`lib/features/anime/data/providers/`):
+  - `AuthorizedAnimeSourceProvider`: Officially authorized HLS adaptive streaming with multi-bitrate tracks (1080p, 720p, 360p) and WebVTT subtitles. Includes open anime catalogue (`findInCatalog`).
+  - `AnikotoSourceProvider`: Source provider wrapping AniKoto metadata and enforcing `X-Frame-Options: SAMEORIGIN` browser launch.
+  - `FetchKickassSourceProvider`: Evaluation provider clearly reporting the unauthorized scraper limitation without scraping or bypassing protections.
+  - `LocalMediaSourceProvider`: Offline downloaded media and direct video streams.
+- [x] **Native Android Media3 / ExoPlayer Integration** (`lib/features/player/presentation/widgets/native_video_player.dart`):
+  - Authorized HLS adaptive streaming via Android Media3 ExoPlayer pipeline.
+  - Controls: Play/Pause, -10s rewind, +10s forward, responsive seek slider with timestamp formatters.
+  - Multi-quality selection popup (Auto Adaptive, 1080p, 720p, 360p) with seamless position retention.
+  - Subtitle selection popup (English, Japanese, Off) with high-visibility overlay.
+  - Episode skip navigation: Previous / Next episode buttons with boundary protection.
+  - Fullscreen & landscape orientation toggle with system UI immersion.
+  - Auto progress saving every 5 seconds and on disposal via `SharedPreferences`.
+  - Episode completion threshold (>85%) triggering `onCompleted` to update SQLite watchlist.
+  - Network error recovery with retry button.
+- [x] **Complete UI Flow & Features**:
+  - Home → Anime Details → Watch Now → Seasons → Episodes → In-App Player.
+  - Continue Watching horizontal carousel on Home screen with progress fractions.
+  - Watch History persistent logging via SQLite `watch_history`.
+  - Watchlist progress auto-synchronization and completion checkmarks.
+  - Source switcher bar across all player views.
+  - Resilient provider fallback so Authorized Streams play even if web sources fail.
+- [x] **Preserved RUN 1–7 Functionality**:
+  - AniList GraphQL API and OAuth sync completely preserved.
+  - YouTube trailer playback preserved.
+  - Local player route `/player` and URL evaluator preserved without GlobalKey conflicts.
+  - SQLite persistence and GoRouter navigation shell intact.
+- [x] **Comprehensive Test Suite**:
+  - `test/models/anime_source_test.dart` (6 unit tests).
+  - `test/repository/anime_source_provider_test.dart` (8 repository & provider tests).
+  - `test/presentation/media3_player_widget_test.dart` (2 comprehensive widget tests).
+  - All 137 existing tests preserved without regression (total 153 tests).
+
 

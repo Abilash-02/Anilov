@@ -1,7 +1,13 @@
 /// Playback providers supported by Anilov.
 enum PlaybackProviderType {
+  /// Authorized HLS in-app video streaming via Android Media3 / ExoPlayer.
+  authorizedStream,
+
   /// AniKoto web source (https://anikoto.cz).
   anikoto,
+
+  /// Fetch-inspired KickassAnime source (evaluation / scraper restricted).
+  fetchKickass,
 
   /// Local user media and direct video streams.
   localPlayer,
@@ -10,8 +16,12 @@ enum PlaybackProviderType {
 extension PlaybackProviderTypeExtension on PlaybackProviderType {
   String get displayName {
     switch (this) {
+      case PlaybackProviderType.authorizedStream:
+        return 'Authorized Stream';
       case PlaybackProviderType.anikoto:
         return 'AniKoto';
+      case PlaybackProviderType.fetchKickass:
+        return 'Fetch (Kickass)';
       case PlaybackProviderType.localPlayer:
         return 'Local Player';
     }
@@ -19,8 +29,12 @@ extension PlaybackProviderTypeExtension on PlaybackProviderType {
 
   String get description {
     switch (this) {
+      case PlaybackProviderType.authorizedStream:
+        return 'Authorized in-app HLS video playback with Media3 ExoPlayer.';
       case PlaybackProviderType.anikoto:
         return 'Stream anime episodes via AniKoto (anikoto.cz).';
+      case PlaybackProviderType.fetchKickass:
+        return 'Fetch KickassAnime source evaluation (stream scraping restricted).';
       case PlaybackProviderType.localPlayer:
         return 'Play offline local media files and direct streams.';
     }

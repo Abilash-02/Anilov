@@ -132,10 +132,11 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
                       : const Color(0xFFE5E7EB),
                 ),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildProviderTab(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildProviderTab(
                       label: 'AniKoto Source',
                       icon: Icons.language_rounded,
                       isSelected: currentProvider == PlaybackProviderType.anikoto,
@@ -146,10 +147,34 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
                       },
                       isDark: isDark,
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: _buildProviderTab(
+                    const SizedBox(width: 4),
+                    _buildProviderTab(
+                      label: 'Authorized Stream',
+                      icon: Icons.play_circle_fill_rounded,
+                      isSelected:
+                          currentProvider == PlaybackProviderType.authorizedStream,
+                      onTap: () {
+                        ref
+                            .read(selectedPlaybackProvider.notifier)
+                            .setProvider(PlaybackProviderType.authorizedStream);
+                      },
+                      isDark: isDark,
+                    ),
+                    const SizedBox(width: 4),
+                    _buildProviderTab(
+                      label: 'Fetch (Kickass)',
+                      icon: Icons.shield_outlined,
+                      isSelected:
+                          currentProvider == PlaybackProviderType.fetchKickass,
+                      onTap: () {
+                        ref
+                            .read(selectedPlaybackProvider.notifier)
+                            .setProvider(PlaybackProviderType.fetchKickass);
+                      },
+                      isDark: isDark,
+                    ),
+                    const SizedBox(width: 4),
+                    _buildProviderTab(
                       label: 'Local Player',
                       icon: Icons.video_library_outlined,
                       isSelected:
@@ -161,8 +186,8 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
                       },
                       isDark: isDark,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -171,6 +196,12 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
           // Content body based on Provider
           if (currentProvider == PlaybackProviderType.localPlayer)
             _buildLocalPlayerOption(context, isDark)
+          else if (currentProvider == PlaybackProviderType.fetchKickass)
+            _buildFetchContent(context, isDark)
+          else if (currentProvider == PlaybackProviderType.authorizedStream)
+            Expanded(
+              child: _buildAuthorizedContent(context, watchedProgress, isDark),
+            )
           else
             Expanded(
               child: anikotoShowAsync.when(
@@ -240,7 +271,7 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
       borderRadius: BorderRadius.circular(8),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.violet
@@ -249,6 +280,7 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
@@ -270,6 +302,152 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAuthorizedContent(
+    BuildContext context,
+    int watchedProgress,
+    bool isDark,
+  ) {
+    final totalEps = widget.anime.episodes ?? 12;
+    final nextEp = (watchedProgress < totalEps) ? watchedProgress + 1 : 1;
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Authorized HLS Episodes ($totalEps)',
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+              ),
+              FilledButton.tonalIcon(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  context.push(
+                    '/watch/${widget.anime.id}?ep=$nextEp&provider=authorized',
+                  );
+                },
+                icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                label: Text(
+                  watchedProgress > 0 ? 'Continue Ep $nextEp' : 'Play Ep 1',
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 5,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              childAspectRatio: 1.1,
+            ),
+            itemCount: totalEps,
+            itemBuilder: (context, index) {
+              final epNum = index + 1;
+              final isWatched = epNum <= watchedProgress;
+              final isNext = epNum == nextEp;
+
+              return InkWell(
+                onTap: () {
+                  Navigator.of(context).pop();
+                  context.push(
+                    '/watch/${widget.anime.id}?ep=$epNum&provider=authorized',
+                  );
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isNext
+                        ? AppTheme.violet.withValues(alpha: 0.2)
+                        : (isDark
+                            ? AppTheme.darkSurface
+                            : AppTheme.lightSurfaceVariant),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isNext
+                          ? AppTheme.violetLight
+                          : (isWatched
+                              ? Colors.green.withValues(alpha: 0.5)
+                              : (isDark
+                                  ? const Color(0xFF2E2E38)
+                                  : const Color(0xFFE5E7EB))),
+                      width: isNext ? 1.5 : 1.0,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '$epNum',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          color: isNext ? AppTheme.violetLight : null,
+                        ),
+                      ),
+                      if (isWatched)
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          size: 14,
+                          color: Colors.green,
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFetchContent(BuildContext context, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.shield_outlined, size: 48, color: Colors.amber),
+          const SizedBox(height: 12),
+          const Text(
+            'Fetch (KickassAnime) Source Limitation',
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Fetch (github.com/snehilrx/Fetch) relied on a hidden headless WebView script injection into "player.php" '
+            'to scrape pirate playlist streams and bypass Cloudflare protection without an authorized API.\n\n'
+            'In strict compliance with Anilov security and legal guidelines, hidden scraping and DRM bypass are rejected. '
+            'Please use the Authorized Anime Stream provider for full in-app playback.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              height: 1.4,
+              color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
+            ),
+          ),
+          const SizedBox(height: 18),
+          FilledButton.icon(
+            onPressed: () {
+              ref
+                  .read(selectedPlaybackProvider.notifier)
+                  .setProvider(PlaybackProviderType.authorizedStream);
+            },
+            icon: const Icon(Icons.play_circle_fill_rounded),
+            label: const Text('Switch to Authorized Stream'),
+          ),
+        ],
       ),
     );
   }

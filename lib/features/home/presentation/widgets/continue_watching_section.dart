@@ -107,6 +107,23 @@ class ContinueWatchingSection extends StatelessWidget {
                                       child: Icon(Icons.movie, size: 28),
                                     ),
                             ),
+                            // Play icon button overlay
+                            Positioned(
+                              top: 6,
+                              right: 6,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.65),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.play_arrow_rounded,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                              ),
+                            ),
                             // Progress bar at bottom of card
                             Positioned(
                               bottom: 0,

@@ -5,24 +5,30 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../anime/data/providers/authorized_anime_source_provider.dart';
 import '../../anime/domain/models/anime_media.dart';
+import '../../anime/domain/models/anime_source.dart';
 import '../../anime/domain/models/playback_provider.dart';
 import '../../anime/presentation/providers/anikoto_providers.dart';
 import '../../anime/presentation/providers/anime_providers.dart';
 import '../../watchlist/presentation/providers/watchlist_providers.dart';
+import 'widgets/native_video_player.dart';
 
 /// Dedicated landscape-capable in-app player screen for episode playback,
-/// episode navigation, season selection, and source embedding verification.
+/// native Android Media3 / ExoPlayer integration, source provider selection,
+/// season selection, and embedding policy enforcement.
 class EpisodePlayerScreen extends ConsumerStatefulWidget {
   final int animeId;
   final int initialEpisodeNumber;
   final int initialSeasonIndex;
+  final String? initialProvider;
 
   const EpisodePlayerScreen({
     super.key,
     required this.animeId,
     this.initialEpisodeNumber = 1,
     this.initialSeasonIndex = 0,
+    this.initialProvider,
   });
 
   @override
@@ -33,13 +39,25 @@ class EpisodePlayerScreen extends ConsumerStatefulWidget {
 class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
   late int _currentEpisode;
   late int _currentSeasonIndex;
+  late PlaybackProviderType _activeProvider;
   bool _isLandscape = false;
+  final AuthorizedAnimeSourceProvider _authorizedProvider =
+      AuthorizedAnimeSourceProvider();
 
   @override
   void initState() {
     super.initState();
     _currentEpisode = widget.initialEpisodeNumber;
     _currentSeasonIndex = widget.initialSeasonIndex;
+    if (widget.initialProvider == 'authorized') {
+      _activeProvider = PlaybackProviderType.authorizedStream;
+    } else if (widget.initialProvider == 'fetch_kickass') {
+      _activeProvider = PlaybackProviderType.fetchKickass;
+    } else if (widget.initialProvider == 'local') {
+      _activeProvider = PlaybackProviderType.localPlayer;
+    } else {
+      _activeProvider = ref.read(selectedPlaybackProvider);
+    }
   }
 
   @override
@@ -49,6 +67,7 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 
@@ -62,11 +81,13 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
       ]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     } else {
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
       ]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     }
   }
 
@@ -74,7 +95,8 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
     final uri = Uri.tryParse(url);
     if (uri != null) {
       try {
-        final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+        final launched =
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
         if (!launched && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Could not open $url in external browser.')),
@@ -106,6 +128,32 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
     );
   }
 
+  void _recordPlaybackProgress(
+    AnimeMedia anime,
+    int episodeNumber,
+    int posSec,
+    int durSec,
+  ) {
+    // Update history in SQLite
+    ref.read(historyRepositoryProvider).addOrUpdate(
+          animeId: anime.id,
+          title: anime.title.displayTitle,
+          coverUrl: anime.coverImage.displayUrl,
+          episodeNumber: episodeNumber,
+          watchedAt: DateTime.now().millisecondsSinceEpoch,
+        );
+
+    // If watched over 85%, update watchlist
+    if (durSec > 0 && (posSec / durSec) >= 0.85) {
+      ref.read(watchlistNotifierProvider.notifier).updateProgress(
+            anime.id,
+            episodeNumber,
+            title: anime.title.displayTitle,
+            coverUrl: anime.coverImage.displayUrl,
+          );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final detailsAsync = ref.watch(animeDetailsProvider(widget.animeId));
@@ -113,7 +161,8 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+      backgroundColor:
+          isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
       body: SafeArea(
         child: detailsAsync.when(
           loading: () => const Center(
@@ -171,53 +220,93 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
           data: (anime) {
             final anikotoAsync = ref.watch(anikotoShowProvider(anime));
 
-            return anikotoAsync.when(
-              loading: () => const Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 12),
-                    Text('Connecting to AniKoto source...'),
-                  ],
-                ),
-              ),
-              error: (err, stack) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+            // When AniKoto provider is explicitly active, handle its full state lifecycle
+            if (_activeProvider == PlaybackProviderType.anikoto) {
+              return anikotoAsync.when(
+                loading: () => const Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.cloud_off_rounded,
-                          size: 48, color: Colors.amber),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Failed to resolve AniKoto source',
-                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        err.toString(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                      const SizedBox(height: 16),
-                      FilledButton.icon(
-                        onPressed: () =>
-                            ref.refresh(anikotoShowProvider(anime)),
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Retry AniKoto Source'),
-                      ),
+                      CircularProgressIndicator(),
+                      SizedBox(height: 12),
+                      Text('Connecting to AniKoto source...'),
                     ],
                   ),
                 ),
-              ),
-              data: (showDetails) => _buildPlayerLayout(
-                context,
-                anime,
-                showDetails,
-                isDark,
-              ),
+                error: (err, stack) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.cloud_off_rounded,
+                            size: 48, color: Colors.amber),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Failed to resolve AniKoto source',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700, fontSize: 16),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          err.toString(),
+                          textAlign: TextAlign.center,
+                          style:
+                              const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 16),
+                        FilledButton.icon(
+                          onPressed: () =>
+                              ref.refresh(anikotoShowProvider(anime)),
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Retry AniKoto Source'),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _activeProvider =
+                                  PlaybackProviderType.authorizedStream;
+                            });
+                          },
+                          child: const Text('Switch to Authorized In-App Player'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                data: (showDetails) => _buildPlayerLayout(
+                  context,
+                  anime,
+                  showDetails,
+                  isDark,
+                ),
+              );
+            }
+
+            // For Authorized Stream, Fetch, or Local:
+            // Use resolved show details if available, or fallback to standard details from anime media
+            final showDetails = anikotoAsync.value ??
+                AnikotoShowDetails(
+                  tipId: null,
+                  title: anime.title.displayTitle,
+                  slug: 'anime-${anime.id}',
+                  totalEpisodes: anime.episodes ?? 12,
+                  seasons: [
+                    AnikotoSeason(
+                      seasonNumber: 1,
+                      name: 'Season 1',
+                      slug: 'anime-${anime.id}',
+                      episodesCount: anime.episodes ?? 12,
+                    ),
+                  ],
+                );
+
+            return _buildPlayerLayout(
+              context,
+              anime,
+              showDetails,
+              isDark,
             );
           },
         ),
@@ -242,13 +331,15 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
             ),
           ];
 
-    final currentSeason = seasons[_currentSeasonIndex.clamp(0, seasons.length - 1)];
-    final totalEpisodes = currentSeason.episodesCount ?? showDetails.totalEpisodes;
-    final clampedEp = _currentEpisode.clamp(1, totalEpisodes > 0 ? totalEpisodes : 1);
+    final currentSeason =
+        seasons[_currentSeasonIndex.clamp(0, seasons.length - 1)];
+    final totalEpisodes =
+        currentSeason.episodesCount ?? showDetails.totalEpisodes;
+    final clampedEp =
+        _currentEpisode.clamp(1, totalEpisodes > 0 ? totalEpisodes : 1);
     final officialEpisodeUrl =
         showDetails.buildEpisodeUrl(clampedEp, seasonSlug: currentSeason.slug);
-    final evaluation =
-        AnikotoPlaybackEvaluation.evaluate(officialEpisodeUrl);
+    final evaluation = AnikotoPlaybackEvaluation.evaluate(officialEpisodeUrl);
 
     final watchlistItem =
         ref.watch(watchlistItemProvider(anime.id)).asData?.value;
@@ -268,6 +359,7 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
                 anime,
                 currentSeason,
                 clampedEp,
+                totalEpisodes,
                 officialEpisodeUrl,
                 evaluation,
                 isDark,
@@ -287,7 +379,8 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
                           color: Colors.black54,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                        child: const Icon(Icons.arrow_back,
+                            color: Colors.white, size: 20),
                       ),
                       onPressed: () {
                         if (context.canPop()) {
@@ -354,7 +447,8 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
           children: [
             // Top App Bar
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
               child: Row(
                 children: [
                   IconButton(
@@ -402,6 +496,9 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
               ),
             ),
 
+            // Source Switcher Bar
+            _buildSourceSwitcher(isDark),
+
             // Video Player Surface
             AspectRatio(
               aspectRatio: 16 / 9,
@@ -410,6 +507,7 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
                 anime,
                 currentSeason,
                 clampedEp,
+                totalEpisodes,
                 officialEpisodeUrl,
                 evaluation,
                 isDark,
@@ -451,16 +549,247 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
     );
   }
 
+  Widget _buildSourceSwitcher(bool isDark) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkSurface : AppTheme.lightSurfaceVariant,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark ? const Color(0xFF2E2E38) : const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _buildSourcePill(
+              label: 'Authorized Stream',
+              icon: Icons.play_circle_fill_rounded,
+              isSelected:
+                  _activeProvider == PlaybackProviderType.authorizedStream,
+              onTap: () {
+                setState(() {
+                  _activeProvider = PlaybackProviderType.authorizedStream;
+                });
+              },
+              isDark: isDark,
+            ),
+            const SizedBox(width: 4),
+            _buildSourcePill(
+              label: 'AniKoto',
+              icon: Icons.language_rounded,
+              isSelected: _activeProvider == PlaybackProviderType.anikoto,
+              onTap: () {
+                setState(() {
+                  _activeProvider = PlaybackProviderType.anikoto;
+                });
+              },
+              isDark: isDark,
+            ),
+            const SizedBox(width: 4),
+            _buildSourcePill(
+              label: 'Fetch (Kickass)',
+              icon: Icons.shield_outlined,
+              isSelected: _activeProvider == PlaybackProviderType.fetchKickass,
+              onTap: () {
+                setState(() {
+                  _activeProvider = PlaybackProviderType.fetchKickass;
+                });
+              },
+              isDark: isDark,
+            ),
+            const SizedBox(width: 4),
+            _buildSourcePill(
+              label: 'Local Player',
+              icon: Icons.video_library_outlined,
+              isSelected: _activeProvider == PlaybackProviderType.localPlayer,
+              onTap: () => context.push('/player'),
+              isDark: isDark,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSourcePill({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.violet : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 14,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark ? Colors.white70 : Colors.black87),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.white70 : Colors.black87),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildPlayerSurface(
     BuildContext context,
     AnimeMedia anime,
     AnikotoSeason currentSeason,
     int episodeNumber,
+    int totalEpisodes,
     String officialUrl,
     AnikotoPlaybackEvaluation evaluation,
     bool isDark, {
     required bool isLandscape,
   }) {
+    if (_activeProvider == PlaybackProviderType.authorizedStream) {
+      return FutureBuilder<EpisodePlaybackInfo>(
+        future: _authorizedProvider.getEpisodePlayback(anime, episodeNumber),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Container(
+              color: Colors.black,
+              child: Center(
+                child: CircularProgressIndicator(color: AppTheme.violetLight),
+              ),
+            );
+          }
+          final info = snapshot.data;
+          if (info != null && info.streams.isNotEmpty) {
+            return NativeVideoPlayer(
+              key: ValueKey('media3_player_${anime.id}_$episodeNumber'),
+              streams: info.streams,
+              subtitles: info.subtitles,
+              title: '${anime.title.displayTitle} — Ep $episodeNumber',
+              episodeNumber: episodeNumber,
+              isFullscreen: isLandscape,
+              onToggleFullscreen: _toggleLandscape,
+              hasNextEpisode: episodeNumber < totalEpisodes,
+              hasPreviousEpisode: episodeNumber > 1,
+              onNextEpisode: () {
+                if (episodeNumber < totalEpisodes) {
+                  setState(() => _currentEpisode = episodeNumber + 1);
+                }
+              },
+              onPreviousEpisode: () {
+                if (episodeNumber > 1) {
+                  setState(() => _currentEpisode = episodeNumber - 1);
+                }
+              },
+              onProgress: (pos, dur) {
+                _recordPlaybackProgress(anime, episodeNumber, pos, dur);
+              },
+              onCompleted: () {
+                _markAsWatched(anime, episodeNumber);
+              },
+            );
+          }
+
+          return const Center(
+            child: Text(
+              'No streams available for this episode',
+              style: TextStyle(color: Colors.white),
+            ),
+          );
+        },
+      );
+    }
+
+    if (_activeProvider == PlaybackProviderType.fetchKickass) {
+      return Container(
+        color: Colors.black,
+        padding: EdgeInsets.all(isLandscape ? 24.0 : 16.0),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.shield_outlined, size: 40, color: Colors.amber),
+                const SizedBox(height: 8),
+                const Text(
+                  'Fetch (KickassAnime) Scraper Limitation',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: Text(
+                    'Fetch inspection (github.com/snehilrx/Fetch) confirmed it relied on hidden CustomWebView '
+                    'script injection into "player.php" to scrape pirate playlist streams and bypass Cloudflare protection.\n\n'
+                    'In accordance with project rules, scraping hidden streams and DRM bypass are strictly rejected.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: isLandscape ? 11 : 12,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    FilledButton.icon(
+                      style: FilledButton.styleFrom(backgroundColor: AppTheme.violet),
+                      icon: const Icon(Icons.play_circle_fill_rounded, size: 18),
+                      label: const Text('Switch to In-App Player'),
+                      onPressed: () {
+                        setState(() {
+                          _activeProvider = PlaybackProviderType.authorizedStream;
+                        });
+                      },
+                    ),
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white30),
+                      ),
+                      icon: const Icon(Icons.video_library_outlined, size: 16),
+                      label: const Text('Open Local Player'),
+                      onPressed: () => context.push('/player'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Default AniKoto player surface with SAMEORIGIN notice
     return Container(
       color: Colors.black,
       padding: EdgeInsets.all(isLandscape ? 24.0 : 16.0),
@@ -521,6 +850,15 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
                     icon: const Icon(Icons.launch_rounded, size: 18),
                     label: Text('Watch Episode $episodeNumber on AniKoto'),
                     onPressed: () => _openOfficialEpisodeUrl(officialUrl),
+                  ),
+                  FilledButton.tonalIcon(
+                    icon: const Icon(Icons.play_circle_fill_rounded, size: 18),
+                    label: const Text('Switch to In-App Player'),
+                    onPressed: () {
+                      setState(() {
+                        _activeProvider = PlaybackProviderType.authorizedStream;
+                      });
+                    },
                   ),
                   OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
@@ -618,8 +956,12 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
           IconButton(
             tooltip: isWatched ? 'Watched' : 'Mark as Watched',
             icon: Icon(
-              isWatched ? Icons.check_circle_rounded : Icons.check_circle_outline_rounded,
-              color: isWatched ? Colors.green : (isDark ? Colors.white60 : Colors.black54),
+              isWatched
+                  ? Icons.check_circle_rounded
+                  : Icons.check_circle_outline_rounded,
+              color: isWatched
+                  ? Colors.green
+                  : (isDark ? Colors.white60 : Colors.black54),
             ),
             onPressed: () => _markAsWatched(anime, episodeNumber),
           ),
@@ -661,7 +1003,9 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
+                color: isDark
+                    ? AppTheme.darkOnSurfaceMuted
+                    : AppTheme.lightOnSurfaceMuted,
               ),
             ),
           ),
@@ -757,7 +1101,8 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
                   ),
                 ),
                 trailing: isCurrent
-                    ? const Icon(Icons.play_arrow_rounded, color: AppTheme.violetLight)
+                    ? const Icon(Icons.play_arrow_rounded,
+                        color: AppTheme.violetLight)
                     : null,
                 onTap: () {
                   setState(() {
@@ -784,7 +1129,8 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+      backgroundColor:
+          isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -807,10 +1153,12 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.0),
                   child: Text(
                     'Select Episode (${currentSeason.name})',
-                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w800, fontSize: 16),
                   ),
                 ),
                 Expanded(
