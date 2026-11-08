@@ -283,7 +283,7 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
                     IconButton(
                       icon: Container(
                         padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: Colors.black54,
                           shape: BoxShape.circle,
                         ),
@@ -316,7 +316,7 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
                     IconButton(
                       icon: Container(
                         padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: Colors.black54,
                           shape: BoxShape.circle,
                         ),

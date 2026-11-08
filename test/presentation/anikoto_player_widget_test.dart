@@ -33,7 +33,7 @@ void main() {
 
   final sampleAnime = AnimeMedia.fromJson(sampleAnimeJson);
 
-  final testShowDetails = AnikotoShowDetails(
+  const testShowDetails = AnikotoShowDetails(
     tipId: 1631,
     title: 'Attack on Titan',
     slug: 'attack-on-titan-bgaoa',

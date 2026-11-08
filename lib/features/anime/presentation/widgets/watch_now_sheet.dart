@@ -140,8 +140,9 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
                       icon: Icons.language_rounded,
                       isSelected: currentProvider == PlaybackProviderType.anikoto,
                       onTap: () {
-                        ref.read(selectedPlaybackProvider.notifier).state =
-                            PlaybackProviderType.anikoto;
+                        ref
+                            .read(selectedPlaybackProvider.notifier)
+                            .setProvider(PlaybackProviderType.anikoto);
                       },
                       isDark: isDark,
                     ),
@@ -154,8 +155,9 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
                       isSelected:
                           currentProvider == PlaybackProviderType.localPlayer,
                       onTap: () {
-                        ref.read(selectedPlaybackProvider.notifier).state =
-                            PlaybackProviderType.localPlayer;
+                        ref
+                            .read(selectedPlaybackProvider.notifier)
+                            .setProvider(PlaybackProviderType.localPlayer);
                       },
                       isDark: isDark,
                     ),
