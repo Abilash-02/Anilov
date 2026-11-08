@@ -333,10 +333,14 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Authorized HLS Episodes ($totalEps)',
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+              Expanded(
+                child: Text(
+                  'Authorized HLS Episodes ($totalEps)',
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              const SizedBox(width: 8),
               FilledButton.tonalIcon(
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -581,10 +585,14 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Episodes ($totalEps)',
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+              Expanded(
+                child: Text(
+                  'Episodes ($totalEps)',
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              const SizedBox(width: 8),
               FilledButton.tonalIcon(
                 onPressed: () {
                   Navigator.of(context).pop();
