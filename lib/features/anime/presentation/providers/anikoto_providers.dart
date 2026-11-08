@@ -33,7 +33,7 @@ final anikotoShowProvider =
 );
 
 /// Notifier managing selected season index.
-class SelectedSeasonIndexNotifier extends AutoDisposeNotifier<int> {
+class SelectedSeasonIndexNotifier extends Notifier<int> {
   @override
   int build() => 0;
 
@@ -42,6 +42,6 @@ class SelectedSeasonIndexNotifier extends AutoDisposeNotifier<int> {
 
 /// Currently selected season index for season browsing.
 final selectedSeasonIndexProvider =
-    AutoDisposeNotifierProvider<SelectedSeasonIndexNotifier, int>(
+    NotifierProvider<SelectedSeasonIndexNotifier, int>(
   SelectedSeasonIndexNotifier.new,
 );

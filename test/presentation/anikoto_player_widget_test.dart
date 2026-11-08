@@ -40,7 +40,7 @@ void main() {
     totalEpisodes: 25,
     subEpisodes: 25,
     dubEpisodes: 25,
-    seasons: const [
+    seasons: [
       AnikotoSeason(
         seasonNumber: 1,
         name: 'Season 1',
