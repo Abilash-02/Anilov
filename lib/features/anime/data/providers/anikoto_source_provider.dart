@@ -50,6 +50,12 @@ class AnikotoSourceProvider implements AnimeSourceProvider {
   }
 
   @override
+  Future<AnimeMedia?> getAnimeDetails(String identifier) async {
+    final results = await searchAnime(identifier);
+    return results.isNotEmpty ? results.first : null;
+  }
+
+  @override
   Future<List<AnimeSourceSeason>> getSeasons(AnimeMedia anime) async {
     final showDetails = await _client.resolveShow(anime);
     if (showDetails.seasons.isNotEmpty) {

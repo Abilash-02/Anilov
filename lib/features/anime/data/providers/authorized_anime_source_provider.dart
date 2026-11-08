@@ -109,7 +109,7 @@ class AuthorizedAnimeSourceProvider implements AnimeSourceProvider {
         medium: item['cover'] as String?,
       ),
       bannerImage: item['banner'] as String?,
-      description: item['synopsis'] as String?,
+      rawDescription: item['synopsis'] as String?,
       episodes: item['episodes'] as int?,
       format: 'TV',
       status: 'FINISHED',
@@ -123,7 +123,7 @@ class AuthorizedAnimeSourceProvider implements AnimeSourceProvider {
     final totalEps = anime.episodes ?? 12;
     if (totalEps > 24) {
       return [
-        AnimeSourceSeason(
+        const AnimeSourceSeason(
           seasonNumber: 1,
           name: 'Season 1',
           slug: 'season-1',

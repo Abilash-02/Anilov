@@ -135,12 +135,11 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
     int durSec,
   ) {
     // Update history in SQLite
-    ref.read(historyRepositoryProvider).addOrUpdate(
+    ref.read(historyRepositoryProvider).recordHistory(
           animeId: anime.id,
           title: anime.title.displayTitle,
           coverUrl: anime.coverImage.displayUrl,
-          episodeNumber: episodeNumber,
-          watchedAt: DateTime.now().millisecondsSinceEpoch,
+          episode: episodeNumber,
         );
 
     // If watched over 85%, update watchlist
@@ -673,9 +672,9 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
         future: _authorizedProvider.getEpisodePlayback(anime, episodeNumber),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Container(
+            return Container(
               color: Colors.black,
-              child: Center(
+              child: const Center(
                 child: CircularProgressIndicator(color: AppTheme.violetLight),
               ),
             );

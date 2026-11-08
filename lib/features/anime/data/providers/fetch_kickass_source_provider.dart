@@ -31,6 +31,9 @@ class FetchKickassSourceProvider implements AnimeSourceProvider {
   }
 
   @override
+  Future<AnimeMedia?> getAnimeDetails(String identifier) async => null;
+
+  @override
   Future<List<AnimeSourceSeason>> getSeasons(AnimeMedia anime) async {
     return [
       AnimeSourceSeason(

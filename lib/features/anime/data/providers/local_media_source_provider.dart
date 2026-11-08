@@ -25,6 +25,9 @@ class LocalMediaSourceProvider implements AnimeSourceProvider {
   Future<List<AnimeMedia>> searchAnime(String query) async => [];
 
   @override
+  Future<AnimeMedia?> getAnimeDetails(String identifier) async => null;
+
+  @override
   Future<List<AnimeSourceSeason>> getSeasons(AnimeMedia anime) async {
     return [
       AnimeSourceSeason(
