@@ -203,11 +203,39 @@ def patch_gradle():
         print(f"{target_path} is already up to date (idempotent check passed).")
         return False
 
+def patch_gradle_wrapper():
+    wrapper_props = Path("android/gradle/wrapper/gradle-wrapper.properties")
+    if not wrapper_props.exists():
+        print("android/gradle/wrapper/gradle-wrapper.properties not found; skipping wrapper patch.")
+        return False
+
+    content = wrapper_props.read_text(encoding="utf-8")
+    original = content
+
+    # Replace GitHub releases mirror with official services.gradle.org to avoid GitHub 504 Gateway Timeouts
+    if "github.com/gradle/gradle-distributions" in content:
+        content = content.replace("https\\://github.com/gradle/gradle-distributions/releases/download/v", "https\\://services.gradle.org/distributions/gradle-")
+        content = content.replace("https://github.com/gradle/gradle-distributions/releases/download/v", "https://services.gradle.org/distributions/gradle-")
+        content = content.replace("https\\://github.com/gradle/gradle-distributions/releases/download/", "https\\://services.gradle.org/distributions/")
+        content = content.replace("https://github.com/gradle/gradle-distributions/releases/download/", "https://services.gradle.org/distributions/")
+        print("Replaced GitHub Gradle mirror with official services.gradle.org")
+
+    if "retries=" not in content:
+        content += "\nretries=5\nnetworkTimeout=60000\n"
+        print("Added retries=5 and networkTimeout=60000 to gradle-wrapper.properties")
+
+    if content != original:
+        wrapper_props.write_text(content, encoding="utf-8")
+        print(f"Successfully patched {wrapper_props}")
+        return True
+    return False
+
 def main():
     print("Running patch_android.py...")
     patch_manifest()
     patch_gradle_properties()
     patch_gradle()
+    patch_gradle_wrapper()
     print("Done.")
 
 if __name__ == "__main__":
