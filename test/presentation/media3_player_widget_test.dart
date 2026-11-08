@@ -169,14 +169,16 @@ void main() {
       expect(find.text('Play Ep 1'), findsOneWidget);
 
       // Switch to Fetch (Kickass) tab
-      await tester.tap(find.text('Fetch (Kickass)'));
+      await tester.ensureVisible(find.text('Fetch (Kickass)'));
+      await tester.tap(find.text('Fetch (Kickass)'), warnIfMissed: false);
       await tester.pumpAndSettle();
 
       expect(find.text('Fetch (KickassAnime) Source Limitation'), findsOneWidget);
       expect(find.text('Switch to Authorized Stream'), findsOneWidget);
 
       // Switch to Local Player tab
-      await tester.tap(find.text('Local Player'));
+      await tester.ensureVisible(find.text('Local Player'));
+      await tester.tap(find.text('Local Player'), warnIfMissed: false);
       await tester.pumpAndSettle();
 
       expect(find.text('Local Media & Direct Stream Player'), findsOneWidget);

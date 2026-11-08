@@ -153,13 +153,15 @@ class AuthorizedAnimeSourceProvider implements AnimeSourceProvider {
     AnimeMedia anime, {
     String? seasonSlug,
   }) async {
-    final seasons = await getSeasons(anime);
-    final selectedSeason = seasons.firstWhere(
-      (s) => s.slug == seasonSlug,
-      orElse: () => seasons.first,
-    );
-
-    final epCount = selectedSeason.episodesCount ?? anime.episodes ?? 12;
+    int epCount = anime.episodes ?? 12;
+    if (seasonSlug != null) {
+      final seasons = await getSeasons(anime);
+      final selectedSeason = seasons.firstWhere(
+        (s) => s.slug == seasonSlug,
+        orElse: () => seasons.first,
+      );
+      epCount = selectedSeason.episodesCount ?? epCount;
+    }
     final episodes = <AnimeSourceEpisode>[];
 
     for (int i = 1; i <= epCount; i++) {

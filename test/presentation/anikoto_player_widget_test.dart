@@ -108,7 +108,8 @@ void main() {
       expect(find.text('25'), findsWidgets);
 
       // Switch to Local Player tab
-      await tester.tap(find.text('Local Player'));
+      await tester.ensureVisible(find.text('Local Player'));
+      await tester.tap(find.text('Local Player'), warnIfMissed: false);
       await tester.pumpAndSettle();
 
       expect(find.text('Local Media & Direct Stream Player'), findsOneWidget);
