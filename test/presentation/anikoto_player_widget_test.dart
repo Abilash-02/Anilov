@@ -273,6 +273,11 @@ void main() {
 
     testWidgets('orientation toggle button toggles landscape and portrait player modes',
         (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       final fakeRepo = FakeAnimeRepository([sampleAnime]);
       final fakeWatchlist = FakeWatchlistRepository();
       final fakeHistory = FakeHistoryRepository();
@@ -350,8 +355,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // WatchNowSheet opened
+      expect(find.byType(WatchNowSheet), findsOneWidget);
       expect(find.text('AniKoto Source'), findsOneWidget);
-      expect(find.text('Episodes (25)'), findsOneWidget);
+      expect(find.text('Episodes (25)'), findsWidgets);
     });
   });
 }

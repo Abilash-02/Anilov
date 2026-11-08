@@ -67,15 +67,14 @@ class AnikotoClient {
     final results = <AnikotoShowDetails>[];
     if (html.isEmpty) return results;
 
-    // Pattern to capture each item container in the search list
-    final itemRegex = RegExp(
-      r'<div class="item\s*">([\s\S]*?)</div>\s*</div>\s*</div>',
-      caseSensitive: false,
-    );
+    // Split HTML by each item container in the search list
+    final itemBlocks = html
+        .split(RegExp(r'<div[^>]*class=["\x27]item\s*["\x27][^>]*>', caseSensitive: false))
+        .skip(1);
 
     final tipIdRegex = RegExp(r'data-tip="(\d+)"');
     final hrefRegex = RegExp(r'href="https?://anikoto\.cz/watch/([^"/]+)');
-    final titleRegex = RegExp(r'<a class="name d-title"[^>]*>([\s\S]*?)</a>');
+    final titleRegex = RegExp(r'<a[^>]*class="name d-title"[^>]*>([\s\S]*?)</a>');
     final posterRegex = RegExp(r'<img\s+src="([^"]+)"');
     final subRegex =
         RegExp(r'<span class="ep-status sub"><span>\s*(\d+)</span></span>');
@@ -84,9 +83,7 @@ class AnikotoClient {
     final totalRegex =
         RegExp(r'<span class="ep-status total"><span>\s*(\d+)</span></span>');
 
-    for (final match in itemRegex.allMatches(html)) {
-      final block = match.group(1) ?? '';
-
+    for (final block in itemBlocks) {
       final tipMatch = tipIdRegex.firstMatch(block);
       final hrefMatch = hrefRegex.firstMatch(block);
       final titleMatch = titleRegex.firstMatch(block);
