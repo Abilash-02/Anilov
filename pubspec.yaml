@@ -41,17 +41,19 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon/
+    - assets/images/
 
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: "assets/icon/icon.png"
-  adaptive_icon_background: "#1B1464"
-  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  image_path: "assets/images/anizen_launcher_icon.png"
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "assets/images/anizen_launcher_icon.png"
+  adaptive_icon_foreground_inset: 20
 
 flutter_native_splash:
-  color: "#1B1464"
-  image: "assets/icon/icon_foreground.png"
+  color: "#000000"
+  image: "assets/images/anizen_splash.png"
   android_12:
-    color: "#1B1464"
-    image: "assets/icon/icon_foreground.png"
+    color: "#000000"
+    image: "assets/images/anizen_splash.png"

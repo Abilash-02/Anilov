@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 tools/patch_android.py
-Idempotent Android project patcher for Anilov:
-1. Sets app label to 'Anilov' in AndroidManifest.xml
+Idempotent Android project patcher for ANIZEN:
+1. Sets app label to 'ANIZEN' in AndroidManifest.xml
 2. Ensures INTERNET, POST_NOTIFICATIONS, RECEIVE_BOOT_COMPLETED, and media permissions are declared
 3. Ensures cleartext traffic is disabled (android:usesCleartextTraffic="false")
 4. Configures core library desugaring in android/app/build.gradle[.kts] for notifications/workmanager
@@ -69,7 +69,7 @@ def patch_manifest():
             content = content[:idx] + queries_block + content[idx:]
             print("Added <queries> block for url_launcher")
 
-    # 3. Set application label to 'Anilov'
+    # 3. Set application label to 'ANIZEN'
     app_tag_match = re.search(r'<application\b([^>]*)>', content, re.DOTALL)
     if app_tag_match:
         app_tag_full = app_tag_match.group(0)
@@ -77,9 +77,9 @@ def patch_manifest():
 
         new_attrs = app_attrs
         if 'android:label=' in new_attrs:
-            new_attrs = re.sub(r'android:label="[^"]*"', 'android:label="Anilov"', new_attrs)
+            new_attrs = re.sub(r'android:label="[^"]*"', 'android:label="ANIZEN"', new_attrs)
         else:
-            new_attrs = ' android:label="Anilov"' + new_attrs
+            new_attrs = ' android:label="ANIZEN"' + new_attrs
 
         if 'android:usesCleartextTraffic=' in new_attrs:
             new_attrs = re.sub(r'android:usesCleartextTraffic="[^"]*"', 'android:usesCleartextTraffic="false"', new_attrs)
@@ -88,6 +88,15 @@ def patch_manifest():
 
         new_app_tag = f"<application{new_attrs}>"
         content = content.replace(app_tag_full, new_app_tag, 1)
+
+    # Also ensure any activity-level label does not override application label
+    activity_matches = list(re.finditer(r'<activity\b([^>]*)>', content, re.DOTALL))
+    for act in activity_matches:
+        act_full = act.group(0)
+        act_attrs = act.group(1)
+        if 'android:label=' in act_attrs:
+            new_act_attrs = re.sub(r'android:label="[^"]*"', 'android:label="ANIZEN"', act_attrs)
+            content = content.replace(act_full, f"<activity{new_act_attrs}>", 1)
 
     # 4. Ensure OAuth deep link intent-filter exists in MainActivity
     if 'android:scheme="anilov"' not in content:

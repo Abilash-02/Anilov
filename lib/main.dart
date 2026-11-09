@@ -56,7 +56,7 @@ class _AnilovAppState extends ConsumerState<AnilovApp> {
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
-      title: 'Anilov',
+      title: 'ANIZEN',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

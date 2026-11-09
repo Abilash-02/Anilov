@@ -129,7 +129,21 @@ def generate_fallback_png():
     print(f"Generated fallback icons: {ICON_PATH} and {FOREGROUND_PATH}")
 
 
+SOURCE_LAUNCHER = Path("assets/images/anizen_launcher_icon.png")
+
+def sync_from_anizen_launcher():
+    if SOURCE_LAUNCHER.exists():
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        import shutil
+        shutil.copyfile(SOURCE_LAUNCHER, ICON_PATH)
+        shutil.copyfile(SOURCE_LAUNCHER, FOREGROUND_PATH)
+        print(f"Synced branding icon from {SOURCE_LAUNCHER} to {ICON_PATH} and {FOREGROUND_PATH}")
+        return True
+    return False
+
 def main():
+    if sync_from_anizen_launcher():
+        return
     try:
         import PIL
         generate_with_pillow()

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../common/widgets/anilov_logo.dart';
 
-/// In-app animated splash screen with the wordmark 'Anilov' and tagline.
+/// In-app animated splash screen displaying the ANIZEN branding splash image.
 /// Determines whether to direct the user to Onboarding or directly to the Home tab.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,7 +14,6 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<double> _scaleAnimation;
   late final Animation<double> _fadeAnimation;
 
   @override
@@ -25,11 +22,6 @@ class _SplashScreenState extends State<SplashScreen>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
-    );
-
-    _scaleAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutBack,
     );
 
     _fadeAnimation = CurvedAnimation(
@@ -72,20 +64,13 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.darkBackground,
+      backgroundColor: Colors.black,
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnimation,
-          child: ScaleTransition(
-            scale: _scaleAnimation,
-            child: const AnilovLogo(
-              size: 80,
-              direction: Axis.vertical,
-              showWordmark: true,
-              showTagline: true,
-              fontSize: 32,
-              textColor: Colors.white,
-            ),
+          child: Image.asset(
+            'assets/images/anizen_splash.png',
+            fit: BoxFit.contain,
           ),
         ),
       ),
