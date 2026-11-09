@@ -230,12 +230,45 @@ def patch_gradle_wrapper():
         return True
     return False
 
+def patch_plugin_proguards():
+    """
+    Patches deprecated `proguard-android.txt` to `proguard-android-optimize.txt`
+    in hosted pub cache plugins (e.g., flutter_inappwebview_android) to support modern AGP 8+/9+.
+    """
+    pub_cache = os.environ.get("PUB_CACHE")
+    paths_to_check = []
+    if pub_cache:
+        paths_to_check.append(Path(pub_cache))
+    paths_to_check.append(Path.home() / ".pub-cache")
+
+    patched_count = 0
+    for base in paths_to_check:
+        hosted = base / "hosted" / "pub.dev"
+        if not hosted.exists():
+            continue
+        for gradle_file in hosted.glob("*/android/build.gradle"):
+            try:
+                content = gradle_file.read_text(encoding="utf-8")
+                if "getDefaultProguardFile('proguard-android.txt')" in content:
+                    content = content.replace(
+                        "getDefaultProguardFile('proguard-android.txt')",
+                        "getDefaultProguardFile('proguard-android-optimize.txt')"
+                    )
+                    gradle_file.write_text(content, encoding="utf-8")
+                    print(f"Patched proguard rule in {gradle_file.parent.parent.name}")
+                    patched_count += 1
+            except Exception as e:
+                print(f"Warning: could not patch {gradle_file}: {e}")
+
+    print(f"Patched {patched_count} plugin build.gradle file(s) for modern AGP proguard compatibility.")
+
 def main():
     print("Running patch_android.py...")
     patch_manifest()
     patch_gradle_properties()
     patch_gradle()
     patch_gradle_wrapper()
+    patch_plugin_proguards()
     print("Done.")
 
 if __name__ == "__main__":

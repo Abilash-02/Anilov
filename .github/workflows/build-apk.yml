@@ -50,6 +50,7 @@ jobs:
       - name: 6. Flutter pub get
         run: |
           flutter pub get
+          python3 tools/patch_android.py
 
       - name: 7. Generate launcher icons and native splash
         run: |
