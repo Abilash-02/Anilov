@@ -1,6 +1,6 @@
 # Anilov Project Progress
 
-## Current State: RUN 16 (Fix CI Test Failure & Build Debug APK) — Completed
+## Current State: RUN 17 (Home Screen Branding Fix) — Completed
 
 | Run | Title | Status | CI Status |
 |---|---|---|---|
@@ -16,6 +16,7 @@
 | **RUN 13** | Add Blue Box S01E01 Source Link | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42573385516`) |
 | **RUN 15** | AniKoto In-App WebView & AniView Architecture | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42591497478`) |
 | **RUN 16** | Fix CI Test Failure & Build Debug APK | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42607264731`) |
+| **RUN 17** | Home Screen Branding Fix | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42611283670`) |
 
 ---
 
@@ -465,5 +466,24 @@
   - Flutter Analyze: Passed (0 issues)
   - Android Build: Debug APK compiled successfully (186 MB)
   - Artifact Uploaded: `anilov-debug-apk`
+
+---
+
+## RUN 17 Deliverables (Home Screen Branding Fix)
+- [x] **Home Screen Top Header Branding Updated**:
+  - Located Home screen `AppBar` title in `lib/features/home/presentation/home_screen.dart`.
+  - Replaced legacy `AnilovLogo` widget with `assets/images/anizen_launcher_icon.png` (using `Image.asset`, 32x32 dp, `BoxFit.contain` preserving 1:1 aspect ratio).
+  - Replaced brand text with `ANIZEN` (Roboto 20sp, weight 800, dynamic contrast-aware surface color).
+  - Preserved header layout, dimensions, alignment, spacing, search icon action, and bottom tabs.
+  - Shared `AnilovLogo` preserved on other screens without regressions.
+- [x] **CI Verification & Production Build**:
+  - GitHub Actions Workflow: `.github/workflows/build-apk.yml`
+  - GitHub Actions Run ID: `42611283670` ([View Run](https://github.com/Abilash-02/Anilov/actions/runs/42611283670))
+  - Tests: 183/183 passed (100%)
+  - Dart Format: Passed (0 errors)
+  - Flutter Analyze: Passed (0 issues)
+  - Android Build: Debug APK compiled successfully (186 MB)
+  - Artifact Uploaded: `anilov-debug-apk`
+
 
 
