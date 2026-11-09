@@ -1,6 +1,6 @@
 # Anilov Project Progress
 
-## Current State: RUN 15 (AniKoto In-App WebView & AniView Architecture) — Completed
+## Current State: RUN 16 (Fix CI Test Failure & Build Debug APK) — Completed
 
 | Run | Title | Status | CI Status |
 |---|---|---|---|
@@ -15,6 +15,7 @@
 | **RUN 8** | Fetch-Inspired Source & Native Media3 Player | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42477509803`) |
 | **RUN 13** | Add Blue Box S01E01 Source Link | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42573385516`) |
 | **RUN 15** | AniKoto In-App WebView & AniView Architecture | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42591497478`) |
+| **RUN 16** | Fix CI Test Failure & Build Debug APK | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42607264731`) |
 
 ---
 
@@ -443,4 +444,26 @@
   - Flutter Analyze: Passed (0 issues)
   - Android Build: Debug APK compiled successfully
   - Artifact Uploaded: `anilov-debug-apk`
+
+---
+
+## RUN 16 Deliverables (Fix CI Test Failure & Build Debug APK)
+- [x] **CI Test Failure Root Cause Analysis**:
+  - Examined GitHub Actions Run #75 test logs (`splash_screen_test.dart:39`).
+  - Identified root causes:
+    1. Widget finder over-matching: `find.byType(FadeTransition)` matched 5 `FadeTransition` instances in the tree (4 created by `MaterialApp` / `MaterialPageRoute` route transitions and 1 in `SplashScreen`).
+    2. Uncancelled timer leak: `SplashScreen` initiated an uncancelable `Future.delayed(Duration(milliseconds: 1200))` in `initState`, violating Flutter test binding invariant `!timersPending` upon widget tree disposal.
+- [x] **Minimal Surgical Code Fixes**:
+  - `test/presentation/splash_screen_test.dart`: Scoped finder to `SplashScreen` descendants (`find.descendant(of: find.byType(SplashScreen), matching: find.byType(FadeTransition))` matching exactly 1).
+  - `lib/features/splash/presentation/splash_screen.dart`: Stored navigation timer in `Timer? _timer` and cancelled it in `dispose()`, preventing timer leaks across tests and lifecycle dismissals.
+  - Preserved ANIZEN app branding, `BoxFit.contain` splash asset scaling, black background, Android package ID `com.anilov`, and app name `ANIZEN`.
+- [x] **CI Verification & Production Build**:
+  - GitHub Actions Workflow: `.github/workflows/build-apk.yml`
+  - GitHub Actions Run ID: `42607264731` ([View Run](https://github.com/Abilash-02/Anilov/actions/runs/42607264731))
+  - Tests: 183/183 passed (100%)
+  - Dart Format: Passed (0 errors)
+  - Flutter Analyze: Passed (0 issues)
+  - Android Build: Debug APK compiled successfully (186 MB)
+  - Artifact Uploaded: `anilov-debug-apk`
+
 
