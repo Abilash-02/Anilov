@@ -1,6 +1,6 @@
 # Anilov Project Progress
 
-## Current State: RUN 8 (Fetch-Inspired Source & Media3 Player Integration) — Implemented
+## Current State: RUN 13 (Add Blue Box S01E01 Source Link) — Implemented
 
 | Run | Title | Status | CI Status |
 |---|---|---|---|
@@ -13,6 +13,7 @@
 | **POST-RUN 6** | Local Player Bug Fix & Custom Video URL | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42379876391`) |
 | **RUN 7** | AniKoto Source Integration | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42448562802`) |
 | **RUN 8** | Fetch-Inspired Source & Native Media3 Player | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42477509803`) |
+| **RUN 13** | Add Blue Box S01E01 Source Link | Completed | Pending CI |
 
 ---
 
@@ -370,6 +371,36 @@
   - Flutter Analyze: Passed (0 issues)
   - Android Build: Debug APK compiled successfully (176 MB)
   - Artifact Uploaded: `anilov-debug-apk`
+
+---
+
+## RUN 13 Deliverables (Add Blue Box S01E01 Source Link)
+- [x] **Source Entry & Model Mapping**:
+  - Anime: Blue Box (*Ao no Hako*, AniList ID `170942`).
+  - Season: 1, Episode: 1.
+  - Source URL: `https://megavid.buzz/ani/170942/1/sub` (exact, unmodified string).
+  - Provider: `MegavidSourceProvider` conforming to `AnimeSourceProvider`.
+  - Mapped strictly to Blue Box S01E01 via `MegavidSourceProvider.isBlueBoxS01E01` (rejected for Episode 2+ and other anime).
+- [x] **Security & Access Policy Evaluation**:
+  - `MegavidPlaybackEvaluation`: Confirms source is an external web link with in-app browser permission.
+  - Media3 direct playback is NOT claimed without an authorized raw stream track.
+  - Cloudflare, DRM, access tokens, and hidden streams are NOT bypassed or scraped.
+- [x] **In-App Browser & Fallback Launch**:
+  - Primary playback action: Launches source page inside Anilov using in-app browser (`LaunchMode.inAppBrowserView`).
+  - Fallback action: If in-app browser is unavailable or errors, shows clear playback error with option to open externally (`LaunchMode.externalApplication`).
+- [x] **Episode Source Selector Integration**:
+  - `WatchNowSheet`: `MegaVid` provider tab appears in the source selector when viewing Blue Box. Displays S01E01 card, preserved URL, in-app browser button, and external button.
+  - `EpisodePlayerScreen`: `MegaVid` pill appears in the episode source switcher bar for Blue Box S01E01. Displays dedicated playback surface with URL and actions.
+  - When switching to Episode 2, MegaVid source pill is hidden and reports clear error notice if requested.
+- [x] **Preserved RUN 1–8 Functionality**:
+  - AniList GraphQL and OAuth sync preserved.
+  - AniKoto public search/seasons and SAMEORIGIN browser flow intact.
+  - Local media player and direct stream playback preserved.
+  - Native Media3 ExoPlayer in-app streaming preserved.
+- [x] **Comprehensive Test Suite**:
+  - `test/models/megavid_source_test.dart` (14 unit tests covering mapping, URL preservation, evaluation, and provider contract).
+  - `test/presentation/megavid_source_selector_widget_test.dart` (4 comprehensive widget tests covering sheet, player screen, and boundary checks).
+
 
 
 

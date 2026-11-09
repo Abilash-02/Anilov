@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../anime/data/providers/authorized_anime_source_provider.dart';
+import '../../anime/data/providers/megavid_source_provider.dart';
 import '../../anime/domain/models/anime_media.dart';
 import '../../anime/domain/models/anime_source.dart';
 import '../../anime/domain/models/playback_provider.dart';
@@ -55,6 +56,8 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
       _activeProvider = PlaybackProviderType.fetchKickass;
     } else if (widget.initialProvider == 'local') {
       _activeProvider = PlaybackProviderType.localPlayer;
+    } else if (widget.initialProvider == 'megavid') {
+      _activeProvider = PlaybackProviderType.megavid;
     } else {
       _activeProvider = ref.read(selectedPlaybackProvider);
     }
@@ -496,7 +499,12 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
             ),
 
             // Source Switcher Bar
-            _buildSourceSwitcher(isDark),
+            _buildSourceSwitcher(
+              isDark,
+              anime: anime,
+              seasonNumber: currentSeason.seasonNumber,
+              episodeNumber: clampedEp,
+            ),
 
             // Video Player Surface
             AspectRatio(
@@ -548,7 +556,19 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
     );
   }
 
-  Widget _buildSourceSwitcher(bool isDark) {
+  Widget _buildSourceSwitcher(
+    bool isDark, {
+    required AnimeMedia anime,
+    required int seasonNumber,
+    required int episodeNumber,
+  }) {
+    final hasMegavid = MegavidSourceProvider.isBlueBoxS01E01(
+      animeId: anime.id,
+      title: anime.title.displayTitle,
+      season: seasonNumber,
+      episode: episodeNumber,
+    );
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
@@ -607,6 +627,20 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
               onTap: () => context.push('/player'),
               isDark: isDark,
             ),
+            if (hasMegavid) ...[
+              const SizedBox(width: 4),
+              _buildSourcePill(
+                label: 'MegaVid',
+                icon: Icons.link_rounded,
+                isSelected: _activeProvider == PlaybackProviderType.megavid,
+                onTap: () {
+                  setState(() {
+                    _activeProvider = PlaybackProviderType.megavid;
+                  });
+                },
+                isDark: isDark,
+              ),
+            ],
           ],
         ),
       ),
@@ -788,6 +822,32 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
       );
     }
 
+    if (_activeProvider == PlaybackProviderType.megavid) {
+      final isBlueBoxEp1 = MegavidSourceProvider.isBlueBoxS01E01(
+        animeId: anime.id,
+        title: anime.title.displayTitle,
+        season: currentSeason.seasonNumber,
+        episode: episodeNumber,
+      );
+      if (isBlueBoxEp1) {
+        return _buildMegavidPlayerSurface(
+          context,
+          anime,
+          episodeNumber,
+          MegavidSourceProvider.blueBoxS01E01Url,
+          isDark,
+          isLandscape: isLandscape,
+        );
+      } else {
+        return _buildMegavidUnavailableSurface(
+          context,
+          episodeNumber,
+          isDark,
+          isLandscape: isLandscape,
+        );
+      }
+    }
+
     // Default AniKoto player surface with SAMEORIGIN notice
     return Container(
       color: Colors.black,
@@ -872,6 +932,213 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMegavidPlayerSurface(
+    BuildContext context,
+    AnimeMedia anime,
+    int episodeNumber,
+    String sourceUrl,
+    bool isDark, {
+    required bool isLandscape,
+  }) {
+    return Container(
+      color: Colors.black,
+      padding: EdgeInsets.all(isLandscape ? 20.0 : 16.0),
+      child: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.violet.withValues(alpha: 0.25),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.link_rounded,
+                  color: AppTheme.violetLight,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Blue Box — Season 1 Episode $episodeNumber',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 4),
+              SelectableText(
+                sourceUrl,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                ),
+              ),
+              const SizedBox(height: 10),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: Text(
+                  'MegaVid source is mapped for Blue Box S01E01. '
+                  'The source page can be opened safely in an in-app browser without scraping hidden video streams '
+                  'or bypassing Cloudflare/DRM access restrictions.\n\n'
+                  'Native Media3 playback is not claimed without an officially supported direct stream.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: isLandscape ? 11 : 12,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 10,
+                runSpacing: 8,
+                alignment: WrapAlignment.center,
+                children: [
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.violet,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                    ),
+                    icon: const Icon(Icons.open_in_browser_rounded, size: 18),
+                    label: const Text('Open in In-App Browser'),
+                    onPressed: () => _openMegavidInApp(sourceUrl),
+                  ),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white30),
+                    ),
+                    icon: const Icon(Icons.launch_rounded, size: 16),
+                    label: const Text('Open in External Browser'),
+                    onPressed: () => _openOfficialEpisodeUrl(sourceUrl),
+                  ),
+                  FilledButton.tonalIcon(
+                    icon: const Icon(Icons.play_circle_fill_rounded, size: 18),
+                    label: const Text('Switch to In-App Player'),
+                    onPressed: () {
+                      setState(() {
+                        _activeProvider = PlaybackProviderType.authorizedStream;
+                      });
+                    },
+                  ),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white30),
+                    ),
+                    icon: const Icon(Icons.video_library_outlined, size: 16),
+                    label: const Text('Open Local Player'),
+                    onPressed: () => context.push('/player'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMegavidUnavailableSurface(
+    BuildContext context,
+    int episodeNumber,
+    bool isDark, {
+    required bool isLandscape,
+  }) {
+    return Container(
+      color: Colors.black,
+      padding: EdgeInsets.all(isLandscape ? 20.0 : 16.0),
+      child: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.info_outline_rounded, size: 40, color: Colors.amber),
+              const SizedBox(height: 10),
+              Text(
+                'MegaVid Unavailable for Episode $episodeNumber',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: const Text(
+                  'The MegaVid source entry is strictly associated only with Blue Box Season 1 Episode 1.\n'
+                  'No source link is mapped for this episode. Please switch to the Authorized Stream provider.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.35),
+                ),
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                style: FilledButton.styleFrom(backgroundColor: AppTheme.violet),
+                icon: const Icon(Icons.play_circle_fill_rounded, size: 18),
+                label: const Text('Switch to Authorized Player'),
+                onPressed: () {
+                  setState(() {
+                    _activeProvider = PlaybackProviderType.authorizedStream;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openMegavidInApp(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      _showMegavidPlaybackError('Invalid source URL: $url', url);
+      return;
+    }
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+      if (!launched && mounted) {
+        _showMegavidPlaybackError(
+          'In-app browser could not open the source page. You can open it in your external browser.',
+          url,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        _showMegavidPlaybackError(
+          'In-app browser error: $e. You can open it in your external browser.',
+          url,
+        );
+      }
+    }
+  }
+
+  void _showMegavidPlaybackError(String message, String url) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 6),
+        action: SnackBarAction(
+          label: 'Open Externally',
+          textColor: AppTheme.violetLight,
+          onPressed: () => _openOfficialEpisodeUrl(url),
         ),
       ),
     );

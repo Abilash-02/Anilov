@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../watchlist/presentation/providers/watchlist_providers.dart';
+import '../../data/providers/megavid_source_provider.dart';
 import '../../domain/models/anime_media.dart';
 import '../../domain/models/playback_provider.dart';
 import '../providers/anikoto_providers.dart';
@@ -47,6 +49,7 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
     final watchlistItem =
         ref.watch(watchlistItemProvider(widget.anime.id)).asData?.value;
     final watchedProgress = watchlistItem?.progress ?? 0;
+    final isBlueBox = MegavidSourceProvider.isBlueBox(widget.anime);
 
     return Container(
       decoration: BoxDecoration(
@@ -186,6 +189,21 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
                       },
                       isDark: isDark,
                     ),
+                    if (isBlueBox) ...[
+                      const SizedBox(width: 4),
+                      _buildProviderTab(
+                        label: 'MegaVid',
+                        icon: Icons.link_rounded,
+                        isSelected:
+                            currentProvider == PlaybackProviderType.megavid,
+                        onTap: () {
+                          ref
+                              .read(selectedPlaybackProvider.notifier)
+                              .setProvider(PlaybackProviderType.megavid);
+                        },
+                        isDark: isDark,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -213,6 +231,14 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
           else if (currentProvider == PlaybackProviderType.authorizedStream)
             Expanded(
               child: _buildAuthorizedContent(context, watchedProgress, isDark),
+            )
+          else if (currentProvider == PlaybackProviderType.megavid)
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  child: _buildMegavidContent(context, isDark),
+                ),
+              ),
             )
           else
             Expanded(
@@ -499,6 +525,158 @@ class _WatchNowSheetState extends ConsumerState<WatchNowSheet> {
             label: const Text('Open Local Player'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMegavidContent(BuildContext context, bool isDark) {
+    const s01e01Url = MegavidSourceProvider.blueBoxS01E01Url;
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppTheme.violet.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.link_rounded, size: 40, color: AppTheme.violetLight),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Blue Box — Season 1 Episode 1',
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+          ),
+          const SizedBox(height: 4),
+          SelectableText(
+            s01e01Url,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              fontFamily: 'monospace',
+              color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E1E26) : const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isDark ? const Color(0xFF2E2E38) : const Color(0xFFE5E7EB),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.check_circle_outline, size: 16, color: Colors.green),
+                    const SizedBox(width: 6),
+                    Text(
+                      'In-App Browser Supported',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'The provider permits opening the official source page inside Anilov using the in-app browser. '
+                  'Per project rules, hidden video URLs are not extracted, and Cloudflare/DRM protections are not bypassed. '
+                  'Native Media3 playback is not claimed without an authorized direct stream.',
+                  style: TextStyle(
+                    fontSize: 11,
+                    height: 1.35,
+                    color: isDark ? AppTheme.darkOnSurfaceMuted : AppTheme.lightOnSurfaceMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: [
+              FilledButton.icon(
+                style: FilledButton.styleFrom(backgroundColor: AppTheme.violet),
+                onPressed: () => _openMegavidInApp(context, s01e01Url),
+                icon: const Icon(Icons.open_in_browser_rounded, size: 18),
+                label: const Text('Open in In-App Browser'),
+              ),
+              OutlinedButton.icon(
+                onPressed: () => _openMegavidExternal(context, s01e01Url),
+                icon: const Icon(Icons.launch_rounded, size: 16),
+                label: const Text('Open Externally'),
+              ),
+              FilledButton.tonalIcon(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  context.push(
+                    '/watch/${widget.anime.id}?ep=1&provider=megavid',
+                  );
+                },
+                icon: const Icon(Icons.play_circle_fill_rounded, size: 18),
+                label: const Text('Open in Player'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openMegavidInApp(BuildContext context, String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      _showMegavidError(context, 'Invalid source URL', url);
+      return;
+    }
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+      if (!launched && context.mounted) {
+        _showMegavidError(context, 'In-app browser could not open the source page.', url);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        _showMegavidError(context, 'In-app browser error: $e', url);
+      }
+    }
+  }
+
+  Future<void> _openMegavidExternal(BuildContext context, String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri != null) {
+      try {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to open external browser: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  void _showMegavidError(BuildContext context, String message, String url) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$message Open in external browser?'),
+        duration: const Duration(seconds: 6),
+        action: SnackBarAction(
+          label: 'Open Externally',
+          textColor: AppTheme.violetLight,
+          onPressed: () => _openMegavidExternal(context, url),
+        ),
       ),
     );
   }

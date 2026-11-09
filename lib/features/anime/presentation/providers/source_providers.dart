@@ -6,6 +6,7 @@ import '../../data/providers/anikoto_source_provider.dart';
 import '../../data/providers/authorized_anime_source_provider.dart';
 import '../../data/providers/fetch_kickass_source_provider.dart';
 import '../../data/providers/local_media_source_provider.dart';
+import '../../data/providers/megavid_source_provider.dart';
 import '../../domain/models/anime_media.dart';
 import '../../domain/models/anime_source.dart';
 
@@ -16,6 +17,7 @@ final allSourceProviders = Provider<List<AnimeSourceProvider>>((ref) {
     AnikotoSourceProvider(),
     FetchKickassSourceProvider(),
     LocalMediaSourceProvider(),
+    MegavidSourceProvider(),
   ];
 });
 

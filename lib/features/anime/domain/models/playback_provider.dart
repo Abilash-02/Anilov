@@ -11,6 +11,9 @@ enum PlaybackProviderType {
 
   /// Local user media and direct video streams.
   localPlayer,
+
+  /// MegaVid source (https://megavid.buzz) for mapped anime episodes.
+  megavid,
 }
 
 extension PlaybackProviderTypeExtension on PlaybackProviderType {
@@ -24,6 +27,8 @@ extension PlaybackProviderTypeExtension on PlaybackProviderType {
         return 'Fetch (Kickass)';
       case PlaybackProviderType.localPlayer:
         return 'Local Player';
+      case PlaybackProviderType.megavid:
+        return 'MegaVid';
     }
   }
 
@@ -37,6 +42,8 @@ extension PlaybackProviderTypeExtension on PlaybackProviderType {
         return 'Fetch KickassAnime source evaluation (stream scraping restricted).';
       case PlaybackProviderType.localPlayer:
         return 'Play offline local media files and direct streams.';
+      case PlaybackProviderType.megavid:
+        return 'External anime source link via MegaVid (megavid.buzz).';
     }
   }
 }
@@ -185,6 +192,40 @@ class AnikotoPlaybackEvaluation {
           'legal boundaries, hidden stream URLs are not scraped and DRM/access controls are not bypassed. '
           'Please enjoy official playback through the system browser.',
       canOpenInBrowser: true,
+    );
+  }
+}
+
+/// Evaluation result and policy compliance for MegaVid source links.
+class MegavidPlaybackEvaluation {
+  final String url;
+  final bool isDirectMedia3Supported;
+  final bool canOpenInAppBrowser;
+  final String statusDescription;
+  final String policyNotice;
+
+  const MegavidPlaybackEvaluation({
+    required this.url,
+    required this.isDirectMedia3Supported,
+    required this.canOpenInAppBrowser,
+    required this.statusDescription,
+    required this.policyNotice,
+  });
+
+  /// Evaluates a MegaVid source URL per project security and playback boundaries.
+  factory MegavidPlaybackEvaluation.evaluate(String url) {
+    final uri = Uri.tryParse(url);
+    final isMegavid = uri != null && uri.host.toLowerCase().contains('megavid.buzz');
+
+    return MegavidPlaybackEvaluation(
+      url: url,
+      isDirectMedia3Supported: false,
+      canOpenInAppBrowser: isMegavid,
+      statusDescription: isMegavid
+          ? 'External Source Page (In-App Browser Supported)'
+          : 'External Source Page (External Browser Required)',
+      policyNotice:
+          'MegaVid source page is opened safely via in-app browser without scraping hidden video streams or bypassing Cloudflare/DRM protections.',
     );
   }
 }
