@@ -12,6 +12,10 @@ void main() {
       english: 'Blue Box',
       native: 'アオのハコ',
     ),
+    coverImage: AnimeCover(
+      extraLarge: 'https://example.com/blue_box.jpg',
+      large: 'https://example.com/blue_box.jpg',
+    ),
     format: 'TV',
     status: 'RELEASING',
     episodes: 25,
@@ -22,6 +26,10 @@ void main() {
     title: AnimeTitle(
       romaji: 'Shingeki no Kyojin',
       english: 'Attack on Titan',
+    ),
+    coverImage: AnimeCover(
+      extraLarge: 'https://example.com/aot.jpg',
+      large: 'https://example.com/aot.jpg',
     ),
     format: 'TV',
     status: 'FINISHED',

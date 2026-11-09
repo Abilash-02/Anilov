@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:anilov/core/theme/app_theme.dart';
 import 'package:anilov/features/anime/data/anikoto_client.dart';
-import 'package:anilov/features/anime/data/providers/megavid_source_provider.dart';
 import 'package:anilov/features/anime/domain/models/anime_media.dart';
 import 'package:anilov/features/anime/domain/models/playback_provider.dart';
 import 'package:anilov/features/anime/presentation/providers/anikoto_providers.dart';
@@ -37,6 +36,10 @@ void main() {
       romaji: 'Ao no Hako',
       english: 'Blue Box',
       native: 'アオのハコ',
+    ),
+    coverImage: AnimeCover(
+      extraLarge: 'https://example.com/blue_box.jpg',
+      large: 'https://example.com/blue_box.jpg',
     ),
     format: 'TV',
     status: 'RELEASING',
@@ -81,7 +84,7 @@ void main() {
           ],
           child: MaterialApp(
             theme: AppTheme.darkTheme,
-            home: Scaffold(
+            home: const Scaffold(
               body: WatchNowSheet(anime: blueBoxAnime),
             ),
           ),

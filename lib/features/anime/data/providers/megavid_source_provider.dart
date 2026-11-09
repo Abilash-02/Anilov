@@ -37,13 +37,21 @@ class MegavidSourceProvider implements AnimeSourceProvider {
 
   /// Determines if an anime corresponds to Blue Box.
   static bool isBlueBox(AnimeMedia anime) {
-    if (anime.id == blueBoxAniListId) return true;
+    if (anime.id == blueBoxAniListId) {
+      return true;
+    }
     final displayTitle = anime.title.displayTitle.toLowerCase();
-    if (displayTitle.contains('blue box')) return true;
+    if (displayTitle.contains('blue box')) {
+      return true;
+    }
     final romaji = anime.title.romaji?.toLowerCase() ?? '';
-    if (romaji.contains('ao no hako') || romaji.contains('blue box')) return true;
+    if (romaji.contains('ao no hako') || romaji.contains('blue box')) {
+      return true;
+    }
     final english = anime.title.english?.toLowerCase() ?? '';
-    if (english.contains('blue box')) return true;
+    if (english.contains('blue box')) {
+      return true;
+    }
     return false;
   }
 
@@ -87,9 +95,9 @@ class MegavidSourceProvider implements AnimeSourceProvider {
     return MegavidPlaybackEvaluation.evaluate(url);
   }
 
-  static final AnimeMedia _blueBoxMedia = AnimeMedia(
+  static const AnimeMedia _blueBoxMedia = AnimeMedia(
     id: blueBoxAniListId,
-    title: const AnimeTitle(
+    title: AnimeTitle(
       romaji: 'Ao no Hako',
       english: 'Blue Box',
       native: 'アオのハコ',
@@ -97,13 +105,13 @@ class MegavidSourceProvider implements AnimeSourceProvider {
     format: 'TV',
     status: 'RELEASING',
     episodes: 25,
-    coverImage: const AnimeCover(
+    coverImage: AnimeCover(
       extraLarge:
           'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx170942-eZ0j2Wk1R5Q8.jpg',
       large:
           'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx170942-eZ0j2Wk1R5Q8.jpg',
     ),
-    description:
+    rawDescription:
         'Taiki Inomata is on the boys\' badminton team at sports powerhouse Eimei Junior and Senior High. He\'s in love with Chinatsu Kano, the older girl on the girls\' basketball team.',
   );
 
