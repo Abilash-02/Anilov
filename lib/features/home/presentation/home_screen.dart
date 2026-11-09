@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../anime/presentation/providers/anime_providers.dart';
-import '../../common/widgets/anilov_logo.dart';
 import '../../watchlist/presentation/providers/watchlist_providers.dart';
 import 'widgets/anime_horizontal_section.dart';
 import 'widgets/continue_watching_section.dart';
@@ -33,7 +32,28 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const AnilovLogo(size: 32, fontSize: 20),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/anizen_launcher_icon.png',
+              width: 32,
+              height: 32,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'ANIZEN',
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+                color: isDark ? AppTheme.darkOnSurface : AppTheme.lightOnSurface,
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
