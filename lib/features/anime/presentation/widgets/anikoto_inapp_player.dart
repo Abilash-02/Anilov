@@ -91,14 +91,14 @@ class _AnikotoInAppPlayerState extends State<AnikotoInAppPlayer> {
           else
             _buildPlatformFallback(context),
 
-          // Loading Progress Bar
-          if (_isLoading && _progress < 1.0)
+          // Loading Progress Bar (active only on mobile webview during live page loads)
+          if (isMobilePlatform && _isLoading && _progress > 0 && _progress < 1.0)
             Positioned(
               top: 0,
               left: 0,
               right: 0,
               child: LinearProgressIndicator(
-                value: _progress > 0 ? _progress : null,
+                value: _progress,
                 backgroundColor: Colors.transparent,
                 color: AppTheme.violetLight,
                 minHeight: 3,

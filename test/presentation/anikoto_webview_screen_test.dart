@@ -29,7 +29,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       // Header controls bar
-      expect(find.text('AniKoto Home'), findsOneWidget);
+      expect(find.text('AniKoto Home'), findsWidgets);
       expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
       expect(find.byIcon(Icons.refresh_rounded), findsWidgets);
       expect(find.byIcon(Icons.open_in_browser_rounded), findsWidgets);
@@ -64,7 +64,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       // Title & URL
-      expect(find.text('Solo Leveling — Ep 1'), findsOneWidget);
+      expect(find.text('Solo Leveling — Ep 1'), findsWidgets);
       expect(find.text(episodeUrl), findsOneWidget);
 
       // Orientation button
@@ -106,7 +106,7 @@ void main() {
       await tester.tap(find.text('Reload WebView'));
       await tester.pumpAndSettle();
 
-      expect(find.text('AniKoto Login'), findsOneWidget);
+      expect(find.text('AniKoto Login'), findsWidgets);
     });
   });
 

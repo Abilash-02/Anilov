@@ -153,14 +153,14 @@ class _AnikotoWebViewScreenState extends State<AnikotoWebViewScreen> {
               else
                 _buildNonMobileView(context, isDark),
 
-              // Top loading progress bar
-              if (_isLoading && _progress < 1.0)
+              // Top loading progress bar (active only on mobile webview during live page loads)
+              if (isMobilePlatform && _isLoading && _progress > 0 && _progress < 1.0)
                 Positioned(
                   top: 0,
                   left: 0,
                   right: 0,
                   child: LinearProgressIndicator(
-                    value: _progress > 0 ? _progress : null,
+                    value: _progress,
                     backgroundColor: Colors.transparent,
                     color: AppTheme.violetLight,
                     minHeight: 3,
