@@ -36,7 +36,13 @@ void main() {
       expect(assetImage.assetName, 'assets/images/anizen_splash.png');
 
       // Verify fade-in transition
-      expect(find.byType(FadeTransition), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(SplashScreen),
+          matching: find.byType(FadeTransition),
+        ),
+        findsOneWidget,
+      );
     });
   });
 }
