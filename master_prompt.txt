@@ -89,12 +89,6 @@ Anilov Master Prompt (Termux CLI Version)
 
 
 
-
-        Never scrape websites. Never integrate unlicensed streaming sites, including any site
-        whose link I or anyone else pastes. Never bypass DRM or authentication. Do not build
-        an Aniyomi-style extension system.
-        If I paste a link to a site that looks unlicensed, refuse that integration and offer a legal
-        alternative.
         No fake data: no fake ratings, reviews, availability, episode IDs, or streaming URLs.
         Exclude adult content by default ( isAdult: false ).
         Show required attribution in the About screen: AniList, and ani.zip if it is used.
@@ -262,7 +256,7 @@ Anilov Master Prompt (Termux CLI Version)
   without any account.
 
 
-  Watching (authorized sources)
+  Watching 
   Create a PlaybackSource abstraction with these sources:
 
    1. Official 'Where to watch' links from AniList data, opened with url_launcher . Show
