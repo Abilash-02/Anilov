@@ -1,6 +1,6 @@
 # Anilov Project Progress
 
-## Current State: RUN 13 (Add Blue Box S01E01 Source Link) — Implemented
+## Current State: RUN 15 (AniKoto In-App WebView & AniView Architecture) — Implemented
 
 | Run | Title | Status | CI Status |
 |---|---|---|---|
@@ -14,6 +14,7 @@
 | **RUN 7** | AniKoto Source Integration | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42448562802`) |
 | **RUN 8** | Fetch-Inspired Source & Native Media3 Player | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42477509803`) |
 | **RUN 13** | Add Blue Box S01E01 Source Link | Completed | Passed (Artifact: `anilov-debug-apk`, Run ID: `42573385516`) |
+| **RUN 15** | AniKoto In-App WebView & AniView Architecture | Completed | Pending CI |
 
 ---
 
@@ -409,6 +410,32 @@
   - Flutter Analyze: Passed (0 issues)
   - Android Build: Debug APK compiled successfully (176 MB)
   - Artifact Uploaded: `anilov-debug-apk`
+
+---
+
+## RUN 15 Deliverables (AniKoto Background WebView & In-App Playback Architecture)
+- [x] **In-App WebView Architecture & Package Integration**:
+  - Integrated `flutter_inappwebview` (`>=6.0.0 <7.0.0`) in `pubspec.yaml`.
+  - Configured Android hardware acceleration, media playback without user gesture, inline media playback, DOM storage, cookies, and cache.
+- [x] **Dedicated Full-Screen Screen & Embedded Player Widget**:
+  - `AnikotoWebViewScreen` (`lib/features/anime/presentation/screens/anikoto_webview_screen.dart`): Full-screen, landscape-capable, immersive-sticky WebView screen with top controls, linear loading progress indicator, orientation toggle, and retry overlay.
+  - `AnikotoInAppPlayer` (`lib/features/anime/presentation/widgets/anikoto_inapp_player.dart`): Embedded visible player surface for AniKoto inside `EpisodePlayerScreen` without launching external Chrome.
+  - Route `/anikoto-webview` registered in `appRouter` (`lib/core/router/app_router.dart`).
+- [x] **Lifecycle, Navigation & Error Handling**:
+  - Managed session state, cookies, and history navigation via `canGoBack()` and `goBack()`.
+  - Android back navigation intercept (`PopScope`) handles in-page history before popping.
+  - Error state handling with "Retry" action and lawful external browser fallback.
+- [x] **Security, Transparency & Policy Compliance**:
+  - Does NOT scrape hidden media streams, tokens, or private endpoints.
+  - Does NOT bypass Cloudflare, DRM, authentication, or anti-bot checks.
+  - Does NOT inject scripts to defeat website protections.
+  - Clearly distinguishes visible embedded WebView from native Media3 playback.
+- [x] **Preserved Existing Features**:
+  - Preserved AniList GraphQL & OAuth sync, Media3 HLS playback, Local Player, YouTube trailers, Watchlist, Schedule, and MegaVid mapping.
+- [x] **Comprehensive Test Suite**:
+  - `test/presentation/anikoto_webview_screen_test.dart` (5 unit & widget tests covering homepage, episode URL, orientation, retry/fallback, and embedded player lifecycle).
+  - All 177 existing tests preserved without regression (total 182 tests).
+
 
 
 

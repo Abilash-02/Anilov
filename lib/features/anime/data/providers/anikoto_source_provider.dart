@@ -20,7 +20,7 @@ class AnikotoSourceProvider implements AnimeSourceProvider {
 
   @override
   String get description =>
-      'AniKoto catalogue (anikoto.cz). In-app embedding restricted by SAMEORIGIN; launches externally.';
+      'AniKoto catalogue (anikoto.cz). In-app WebView player supported; external browser fallback retained.';
 
   @override
   SourceAvailabilityStatus get availability =>

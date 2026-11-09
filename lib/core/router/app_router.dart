@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/anime/presentation/screens/anikoto_webview_screen.dart';
 import '../../features/anime/presentation/screens/anime_details_screen.dart';
 import '../../features/explore/presentation/explore_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
@@ -55,6 +56,24 @@ final GoRouter appRouter = GoRouter(
           initialEpisodeNumber: ep,
           initialSeasonIndex: season,
           initialProvider: providerStr,
+        );
+      },
+    ),
+    GoRoute(
+      path: '/anikoto-webview',
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) {
+        final url = state.uri.queryParameters['url'] ?? 'https://anikoto.cz/home';
+        final title = state.uri.queryParameters['title'] ?? 'AniKoto In-App Player';
+        final epStr = state.uri.queryParameters['ep'];
+        final ep = epStr != null ? int.tryParse(epStr) : null;
+        final animeIdStr = state.uri.queryParameters['animeId'];
+        final animeId = animeIdStr != null ? int.tryParse(animeIdStr) : null;
+        return AnikotoWebViewScreen(
+          initialUrl: url,
+          title: title,
+          episodeNumber: ep,
+          animeId: animeId,
         );
       },
     ),

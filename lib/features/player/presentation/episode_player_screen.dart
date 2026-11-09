@@ -12,6 +12,7 @@ import '../../anime/domain/models/anime_source.dart';
 import '../../anime/domain/models/playback_provider.dart';
 import '../../anime/presentation/providers/anikoto_providers.dart';
 import '../../anime/presentation/providers/anime_providers.dart';
+import '../../anime/presentation/widgets/anikoto_inapp_player.dart';
 import '../../watchlist/presentation/providers/watchlist_providers.dart';
 import 'widgets/native_video_player.dart';
 
@@ -848,92 +849,15 @@ class _EpisodePlayerScreenState extends ConsumerState<EpisodePlayerScreen> {
       }
     }
 
-    // Default AniKoto player surface with SAMEORIGIN notice
-    return Container(
-      color: Colors.black,
-      padding: EdgeInsets.all(isLandscape ? 24.0 : 16.0),
-      child: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.violet.withValues(alpha: 0.25),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.open_in_browser_rounded,
-                  color: AppTheme.violetLight,
-                  size: 32,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Official Episode $episodeNumber on AniKoto',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 6),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 480),
-                child: Text(
-                  'AniKoto (anikoto.cz) enforces "X-Frame-Options: SAMEORIGIN" and does not offer an authorized third-party embed API. '
-                  'In compliance with safety policies, hidden streams are not scraped or bypassed.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: isLandscape ? 11 : 12,
-                    height: 1.35,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              Wrap(
-                spacing: 10,
-                runSpacing: 8,
-                alignment: WrapAlignment.center,
-                children: [
-                  FilledButton.icon(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppTheme.violet,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                    ),
-                    icon: const Icon(Icons.launch_rounded, size: 18),
-                    label: Text('Watch Episode $episodeNumber on AniKoto'),
-                    onPressed: () => _openOfficialEpisodeUrl(officialUrl),
-                  ),
-                  FilledButton.tonalIcon(
-                    icon: const Icon(Icons.play_circle_fill_rounded, size: 18),
-                    label: const Text('Switch to In-App Player'),
-                    onPressed: () {
-                      setState(() {
-                        _activeProvider = PlaybackProviderType.authorizedStream;
-                      });
-                    },
-                  ),
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white30),
-                    ),
-                    icon: const Icon(Icons.video_library_outlined, size: 16),
-                    label: const Text('Open Local Player'),
-                    onPressed: () => context.push('/player'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+    // AniKoto in-app WebView player (AniView-style)
+    return AnikotoInAppPlayer(
+      key: ValueKey('anikoto_player_${anime.id}_$episodeNumber'),
+      watchUrl: officialUrl,
+      title: '${anime.title.displayTitle} — Ep $episodeNumber',
+      episodeNumber: episodeNumber,
+      animeId: anime.id,
+      isFullscreen: isLandscape,
+      onToggleFullscreen: _toggleLandscape,
     );
   }
 
