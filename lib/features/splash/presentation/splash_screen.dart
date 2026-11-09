@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,6 +16,7 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _fadeAnimation;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -30,12 +32,10 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _controller.forward();
-    _checkNextScreen();
+    _timer = Timer(const Duration(milliseconds: 1200), _checkNextScreen);
   }
 
   Future<void> _checkNextScreen() async {
-    // Ensure splash is visible for at least 1200ms for smooth user experience
-    await Future.delayed(const Duration(milliseconds: 1200));
     if (!mounted) return;
 
     try {
@@ -50,13 +50,16 @@ class _SplashScreenState extends State<SplashScreen>
       }
     } catch (_) {
       if (mounted) {
-        context.go('/home');
+        try {
+          context.go('/home');
+        } catch (_) {}
       }
     }
   }
 
   @override
   void dispose() {
+    _timer?.cancel();
     _controller.dispose();
     super.dispose();
   }
