@@ -97,8 +97,10 @@ void main() {
       // MegaVid source tab is displayed under episode source selector for Blue Box
       expect(find.text('MegaVid'), findsOneWidget);
 
-      // Tap MegaVid provider tab
-      await tester.tap(find.text('MegaVid'));
+      // Scroll into view and tap MegaVid provider tab
+      await tester.ensureVisible(find.text('MegaVid'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('MegaVid'), warnIfMissed: false);
       await tester.pumpAndSettle();
 
       // Displays Blue Box Season 1 Episode 1 title and unmodified source URL
@@ -185,8 +187,10 @@ void main() {
       // In source switcher, MegaVid pill is present for Episode 1
       expect(find.text('MegaVid'), findsOneWidget);
 
-      // Tap MegaVid pill to switch source
-      await tester.tap(find.text('MegaVid'));
+      // Scroll into view and tap MegaVid pill to switch source
+      await tester.ensureVisible(find.text('MegaVid'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('MegaVid'), warnIfMissed: false);
       await tester.pumpAndSettle();
 
       // Renders MegaVid player surface with preserved URL and in-app browser action
@@ -195,6 +199,46 @@ void main() {
       expect(find.text('Open in In-App Browser'), findsOneWidget);
       expect(find.text('Open in External Browser'), findsOneWidget);
       expect(find.text('Switch to In-App Player'), findsOneWidget);
+    });
+
+    testWidgets('directly launches Blue Box S01E01 with megavid provider',
+        (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final fakeRepo = FakeAnimeRepository([blueBoxAnime]);
+      final fakeWatchlist = FakeWatchlistRepository();
+      final fakeHistory = FakeHistoryRepository();
+      final mockClient = MockAnikotoClient(testShowDetails);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            animeRepositoryProvider.overrideWithValue(fakeRepo),
+            watchlistRepositoryProvider.overrideWithValue(fakeWatchlist),
+            historyRepositoryProvider.overrideWithValue(fakeHistory),
+            anikotoClientProvider.overrideWithValue(mockClient),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.darkTheme,
+            home: const EpisodePlayerScreen(
+              animeId: 170942,
+              initialEpisodeNumber: 1,
+              initialSeasonIndex: 0,
+              initialProvider: 'megavid',
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+
+      expect(find.text('Blue Box — Season 1 Episode 1'), findsOneWidget);
+      expect(find.text('https://megavid.buzz/ani/170942/1/sub'), findsOneWidget);
+      expect(find.text('Open in In-App Browser'), findsOneWidget);
     });
 
     testWidgets('hides MegaVid pill for Episode 2 and renders clear error if selected',
