@@ -105,7 +105,7 @@ void main() {
 
       // Displays Blue Box Season 1 Episode 1 title and unmodified source URL
       expect(find.text('Blue Box — Season 1 Episode 1'), findsOneWidget);
-      expect(find.text('Source: https://megavid.buzz/ani/170942/1/sub'), findsOneWidget);
+      expect(find.text('https://megavid.buzz/ani/170942/1/sub'), findsOneWidget);
       expect(find.text('In-App Browser Supported'), findsOneWidget);
       expect(find.text('Open in In-App Browser'), findsOneWidget);
       expect(find.text('Open Externally'), findsOneWidget);
